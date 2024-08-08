@@ -13,7 +13,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+db = SQL("sqlite:///chatapp.db")
 
 
 @app.after_request
@@ -23,3 +23,90 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@app.route('/')
+@login_required
+def index():
+    return render_template("index.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        if not request.form.get("username") or not request.form.get("password") or not request.form.get("confirmation"):
+            flash("Please Enter All Fields")
+            return render_template("register.html")
+            
+        if not (request.form.get("password") == request.form.get("confirmation")):
+            flash("Password fields do not match!")
+            return render_template("register.html")
+
+        username = db.execute("SELECT username FROM users WHERE username = ?",
+                              request.form.get("username"))
+        if username:
+            flash("Username already exists!")
+            return render_template("register.html")
+
+        username = request.form.get("username")
+        password = generate_password_hash(request.form.get("password"))
+
+        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, password)
+
+        user_id = db.execute("SELECT id FROM users WHERE username = ?",
+                             request.form.get("username"))[0]["id"]
+        session["user_id"] = user_id
+        return redirect("/")
+    else:
+        return render_template("register.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+
+    # Forget any user_id
+    session.clear()
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            flash("Must provide username.")
+            return render_template("login.html") 
+
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            flash("Must provide password.")
+            return render_template("login.html")
+
+        # Query database for username
+        rows = db.execute(
+            "SELECT * FROM users WHERE username = ?", request.form.get("username")
+        )
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(
+            rows[0]["hash"], request.form.get("password")
+        ):
+            flash("invalid username and/or password")
+            return render_template("login.html")
+
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+
+        # Redirect user to home page
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("login.html")
+    
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
