@@ -1,0 +1,115 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.mycontainer {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+.sidebar {
+    width: 70px;
+    background-color: #f1f1f1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+}
+
+.icon {
+    width: 50px;
+    height: 50px;
+    background-color: #ccc;
+    border: none;
+    margin: 10px 0;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.contacts-section {
+    width: 250px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+}
+
+.contact {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.contact:hover {
+    background-color: #eee;
+}
+
+.chat-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+}
+
+.chat-header {
+    min-height: 60px;
+    max-height: 60px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #ccc;
+    border-radius: 50%;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+.chat-input {
+    min-height: 60px;
+    max-height: 60px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    
+}
+
+.chat-input input {
+    flex-grow: 1;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 0 15px;
+    font-size: 16px;
+}
+
+.send-button {
+    width: 50px;
+    height: 40px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 50%;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
