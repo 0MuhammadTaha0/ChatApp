@@ -17,3 +17,33 @@ const sendMessage = (e) => {
   }
 
 chatInputForm.addEventListener('submit', sendMessage)
+
+//Making contacts clickable and updating chat header
+const contact = document.querySelectorAll('.contact')
+
+for (let i = 0; i < contact.length; i++) {
+    contact[i].addEventListener('click', function() {
+      const chatHeader = document.querySelector('.profile-name')
+      for (let j = 0; j < contact.length; j++) {
+        contact[j].style.backgroundColor = 'white';
+      }
+      contact[i].style.backgroundColor = '#D3D3D3';
+      let contactName = contact[i].innerHTML;
+      chatHeader.innerHTML = contactName;
+    });
+}
+
+//Implementing icons
+const icons = document.querySelectorAll('.icon')
+
+icons[2].onclick = function(){
+  location.href='/friends/add';
+};
+
+icons[3].onclick = function(){
+  location.href='/settings';
+};
+
+icons[4].onclick = function(){
+  location.href='/logout';
+};

@@ -102,6 +102,7 @@ def login():
         return render_template("login.html")
     
 @app.route("/logout")
+@login_required
 def logout():
     """Log user out"""
 
@@ -110,3 +111,42 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
+
+@app.route("/friends/add", methods=["GET", "POST"])
+@login_required
+def friends():
+    if request.method == "GET":
+        return render_template("add-friends.html")
+    else:
+        username = request.form.get("username")
+        if not username:
+            flash("Please Enter Username")
+            return redirect("/friends/add")
+        
+        # Query database for username
+        rows = db.execute(
+            "SELECT * FROM users WHERE username = ?", username
+        )
+
+        # Ensure username exists
+        if len(rows) != 1:
+            flash("User does not exist!")
+            return redirect("/friends/add")
+
+        userid = db.execute("SELECT id from users where username = ?", username)[0]["id"]
+        
+        if userid == session["user_id"]:
+            flash("You cannot be your own friend, duh!")
+            return redirect("/friends/add")
+
+        user = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", session["user_id"], userid)
+        friend = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", userid, session["user_id"])
+
+        if len(user) != 0 or len(friend) != 0:
+            flash("Already Friends")
+            return redirect("/friends/add")
+
+        #Making friendship
+        db.execute("INSERT into friendships (userid, friendid) VALUES (?, ?)", session["user_id"], userid)
+        flash("Friend Added!")
+        return redirect("/")

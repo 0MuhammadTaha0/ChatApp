@@ -1,1 +1,20 @@
-CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username TEXT NOT NULL, hash TEXT NOT NULL, online INTEGER default 0 CHECK (online BETWEEN 0 AND 1));
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+    username TEXT NOT NULL, hash TEXT NOT NULL, 
+    online INTEGER default 0 CHECK (online BETWEEN 0 AND 1));
+
+CREATE TABLE friendships (
+    userid INTEGER,
+    friendid INTEGER,
+    PRIMARY KEY (userid, friendid),
+    FOREIGN KEY (userid) REFERENCES users(id),
+    FOREIGN KEY (friendid) REFERENCES users(id)
+);
+
+CREATE TABLE friend_requests(
+    userid INTEGER,
+    friendid INTEGER,
+    PRIMARY KEY (userid, friendid),
+    FOREIGN KEY (userid) REFERENCES users(id),
+    FOREIGN KEY (friendid) REFERENCES users(id)
+);

@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add Friends
+{% endblock %}
+
+{% block main %}
+<div class="container py-5 text-center">
+    <form action="/friends/add" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" required autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="mb-3">
+            <a href="/">Go to Dashboard?</a>
+        </div>
+        <button class="btn btn-primary" type="submit">Add Friend</button>
+    </form>
+</div>
+{% endblock %}
