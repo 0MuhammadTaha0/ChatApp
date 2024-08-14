@@ -28,7 +28,20 @@ def after_request(response):
 @app.route('/')
 @login_required
 def index():
-    return render_template("index.html")
+    if request.method == "GET":
+        #Fetching the friends from database either current user was in sending or receiving side
+        contacts = db.execute("""SELECT users.username FROM friendships 
+            join users on friendships.friendid = users.id
+            where friendships.userid = ?;""", session["user_id"])
+        contacts2 = db.execute("""SELECT users.username FROM friendships 
+            join users on friendships.userid = users.id
+            where friendships.friendid = ?;""", session["user_id"])
+        for i in contacts2:
+            contacts.append(i)
+        return render_template("index.html", contacts=contacts)
+    else:
+        flash("TODO")
+        return redirect("/")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():

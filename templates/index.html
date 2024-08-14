@@ -16,11 +16,14 @@
     
     <div class="contacts-section">
         <!-- Contacts or conversation list will appear here -->
-        <div class="contact">Person 1</div>
-        <div class="contact">Person 2</div>
-        <div class="contact">Person 3</div>
-        <div class="contact">Person 4</div>
-        <div class="contact">Person 5</div>
+        {% if contacts %}
+            {% for contact in contacts %}
+                <div class="contact">{{ contact.username }}</div>
+            {% endfor %}
+        {% else %}
+            <div class="contact"><a href="/friends/add">Click</a> to add friends!</div>
+        {% endif %} 
+        
     </div>
 
     <div class="chat-section">

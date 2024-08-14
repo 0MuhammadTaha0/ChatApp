@@ -18,3 +18,11 @@ CREATE TABLE friend_requests(
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (friendid) REFERENCES users(id)
 );
+
+SELECT users.username FROM friendships 
+join users on friendships.friendid = users.id
+where friendships.userid = 2;
+
+SELECT users.username FROM friendships 
+join users on friendships.userid = users.id
+where friendships.friendid = 2;
