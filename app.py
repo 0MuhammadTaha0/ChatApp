@@ -29,15 +29,18 @@ def after_request(response):
 @login_required
 def index():
     if request.method == "GET":
-        #Fetching the friends from database either current user was in sending or receiving side
-        contacts = db.execute("""SELECT users.username FROM friendships 
-            join users on friendships.friendid = users.id
-            where friendships.userid = ?;""", session["user_id"])
-        contacts2 = db.execute("""SELECT users.username FROM friendships 
-            join users on friendships.userid = users.id
-            where friendships.friendid = ?;""", session["user_id"])
-        for i in contacts2:
-            contacts.append(i)
+        #Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
+        contacts = db.execute(
+        """     
+            SELECT users.username FROM friendships
+            JOIN users ON users.id = CASE 
+                WHEN friendships.friendid = ? THEN friendships.userid 
+                ELSE friendships.friendid 
+            END
+            WHERE ? IN (friendships.userid, friendships.friendid);
+        """
+        ,session["user_id"], session["user_id"])
+
         return render_template("index.html", contacts=contacts)
     else:
         flash("TODO")

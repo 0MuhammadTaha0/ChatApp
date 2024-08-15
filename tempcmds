@@ -19,10 +19,23 @@ CREATE TABLE friend_requests(
     FOREIGN KEY (friendid) REFERENCES users(id)
 );
 
-SELECT users.username FROM friendships 
-join users on friendships.friendid = users.id
-where friendships.userid = 2;
+CREATE TABLE messages(
+    sender INTEGER NOT NULL,
+    receiver INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY (sender) REFERENCES users(id),
+    FOREIGN KEY (receiver) REFERENCES users(id)
+);
 
-SELECT users.username FROM friendships 
-join users on friendships.userid = users.id
-where friendships.friendid = 2;
+SELECT users.username as sender, b.username as receiver, message, timestamp FROM messages
+JOIN users ON users.id = messages.sender
+JOIN users b ON b.id = messages.receiver
+WHERE
+(messages.sender = 1 and messages.receiver = 2)
+OR
+(messages.sender = 2 and messages.receiver = 1);
+
+            
+
+INSERT INTO messages values (2, 1, '1st msg reply', datetime('now'));
