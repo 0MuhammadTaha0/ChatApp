@@ -47,3 +47,13 @@ icons[3].onclick = function(){
 icons[4].onclick = function(){
   location.href='/logout';
 };
+
+async function asyncCall() {
+  let ok = await fetch('/');
+  let answer = await ok.text();
+  console.log(answer)
+}
+
+asyncCall();
+
+
