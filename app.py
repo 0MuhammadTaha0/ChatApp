@@ -24,41 +24,9 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-@app.route('/fetch')
+@app.route('/fetchContacts')
 @login_required
 def fetch():
-        contacts = db.execute(
-        """     
-            SELECT users.username FROM friendships
-            JOIN users ON users.id = CASE 
-                WHEN friendships.friendid = ? THEN friendships.userid 
-                ELSE friendships.friendid 
-            END
-            WHERE ? IN (friendships.userid, friendships.friendid);
-        """
-        ,session["user_id"], session["user_id"])
-
-        #Loading messages
-        for contact in contacts:
-            other = db.execute("SELECT id from users where username = ?", contact["username"])[0]["id"]
-            contact["messages"] = db.execute(
-            """     
-                SELECT users.username as sender, b.username as receiver, message, timestamp FROM messages
-                JOIN users ON users.id = messages.sender
-                JOIN users b ON b.id = messages.receiver
-                WHERE
-                (messages.sender = ? and messages.receiver = ?)
-                OR
-                (messages.sender = ? and messages.receiver = ?);
-            """
-            ,session["user_id"], other, other, session["user_id"])
-            return jsonify(contacts)
-
-
-@app.route('/')
-@login_required
-def index():
-    if request.method == "GET":
         #Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
         contacts = db.execute(
         """     
@@ -85,8 +53,17 @@ def index():
                 (messages.sender = ? and messages.receiver = ?);
             """
             ,session["user_id"], other, other, session["user_id"])
+            
+        if not contacts:
+            return ('', 204)
+        return jsonify(contacts)
 
-        return render_template("index.html", contacts=contacts)
+
+@app.route('/')
+@login_required
+def index():
+    if request.method == "GET":
+        return render_template("index.html")
     else:
         flash("TODO")
         return redirect("/")
