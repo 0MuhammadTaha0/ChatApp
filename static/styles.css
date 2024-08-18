@@ -110,6 +110,17 @@ body {
     font-size: 18px;
 }
 
+.message {
+    white-space:pre
+}
+
+.activeContact {
+    background-color: #D3D3D3
+}
+.activeContact:hover {
+    background-color: #D3D3D3;
+}
+
 ::-webkit-scrollbar {
     display: none;
 }

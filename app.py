@@ -3,9 +3,12 @@ from flask import Flask, jsonify, flash, redirect, render_template, request, ses
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required
+from flask_socketio import SocketIO
 
-# Configure application
+# Configure application and SocketIO
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -14,6 +17,9 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///chatapp.db")
+
+# SID's of all connected users
+users = {}
 
 
 @app.after_request
@@ -63,7 +69,8 @@ def fetch():
 @login_required
 def index():
     if request.method == "GET":
-        return render_template("index.html")
+        username = db.execute("SELECT username from users WHERE id = ?", session["user_id"])[0]["username"]
+        return render_template("index.html", username=username)
     else:
         flash("TODO")
         return redirect("/")
@@ -132,6 +139,7 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
+        
         # Redirect user to home page
         return redirect("/")
 
@@ -188,3 +196,16 @@ def friends():
         db.execute("INSERT into friendships (userid, friendid) VALUES (?, ?)", session["user_id"], userid)
         flash("Friend Added!")
         return redirect("/")
+    
+# SocketIO
+# https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
+@socketio.on("connect")
+def on_connectt():
+    users[session["user_id"]] = request.sid
+
+@socketio.on('disconnect')
+def on_disconnect():
+    del users[session["user_id"]]
+    
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
