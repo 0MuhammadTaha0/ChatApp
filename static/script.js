@@ -1,4 +1,4 @@
-var socket = io();
+const socket = io();
 let contacts
 const chatInputForm = document.querySelector('.chat-input')
 
@@ -43,9 +43,9 @@ function clickableContacts() {
     }
 }
 
-function appendMessage(message) {
+function appendMessage(message, contact) {
     for (let i = 0; i < contacts.length; i++) {
-        if (contacts[i]["username"] === message["to"]) {
+        if (contacts[i]["username"] === contact) {
             if ('messages' in contacts[i]) {
                 contacts[i]["messages"].push(message)
             }
@@ -59,7 +59,7 @@ function appendMessage(message) {
     }
 }
 
-// A little help from chat gpt handling event
+// A little help from chat gpt for event handling syntax
 const sendMessage = (e) => {
     e.preventDefault()
     // Checking if a contact is selected
@@ -71,7 +71,7 @@ const sendMessage = (e) => {
     const input = document.querySelector('.chat-input input');
     let message = {
         message: input.value.trim(),
-        to: activeContact.innerHTML,
+        receiver: activeContact.innerHTML,
         timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
     }
     if (message['message']) {
@@ -82,7 +82,11 @@ const sendMessage = (e) => {
         chatMessages.appendChild(newMessage);
         input.value = '';
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
-        appendMessage(message);
+        appendMessage(message, message['receiver']);
+
+        // Sending message to the server
+        socket.emit("send_message", message)
+
     }
 }
 
@@ -128,3 +132,16 @@ async function fetchContacts() {
 }
 
 fetchContacts();
+
+socket.on("send_message", function(message) {
+    appendMessage(message, message["sender"])
+    const activeContact = document.querySelector('.activeContact')
+    if (activeContact.innerHTML === message["sender"]) {
+        const chatMessages = document.querySelector('.chat-messages');
+        const newMessage = document.createElement('div');
+        newMessage.classList.add('message');
+        newMessage.textContent = message['message'];
+        chatMessages.appendChild(newMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});

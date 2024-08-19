@@ -56,7 +56,8 @@ def fetch():
                 WHERE
                 (messages.sender = ? and messages.receiver = ?)
                 OR
-                (messages.sender = ? and messages.receiver = ?);
+                (messages.sender = ? and messages.receiver = ?)
+                ORDER BY messages.mid ASC;
             """
             ,session["user_id"], other, other, session["user_id"])
             
@@ -151,12 +152,8 @@ def login():
 @login_required
 def logout():
     """Log user out"""
-
-    # Forget any user_id
-    session.clear()
-
     # Redirect user to login form
-    return redirect("/")
+    return redirect("/login")
 
 @app.route("/friends/add", methods=["GET", "POST"])
 @login_required
@@ -203,9 +200,20 @@ def friends():
 def on_connectt():
     users[session["user_id"]] = request.sid
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def on_disconnect():
     del users[session["user_id"]]
+    # Forget any user_id
+    session.clear()
+
+@socketio.on("send_message")
+def on_send_message(message):
+    sender = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])[0]["username"]
+    receiver = db.execute("SELECT id FROM users WHERE username = ?", message["receiver"])[0]["id"]
+    message["sender"] = sender
+    if receiver in users:
+        socketio.emit("send_message", message, room=users[receiver])
+    db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], receiver, message["message"], message["timestamp"])
     
-if __name__ == '__main__':
-    socketio.run(app, debug=True)
+if __name__ == "__main__":
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

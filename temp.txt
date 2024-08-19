@@ -8,4 +8,3 @@
 
 {% endblock %}
 
-i was trying to append message to the contacts messages on client side
