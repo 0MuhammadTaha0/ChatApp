@@ -151,3 +151,6 @@ body {
         visibility:hidden;
     }
 }
+#profile-pic, #default-pic {
+    width: 200px;
+}

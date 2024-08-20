@@ -15,7 +15,17 @@ function clickableContacts() {
             }
             contact[i].classList.add('activeContact');
             let contactName = contact[i].innerHTML;
-            chatHeader.innerHTML = contactName;
+            let contactStatus = "";
+
+            for (let i = 0; i < contacts.length; i++) {
+                if (contacts[i]["username"] === contactName) {
+                    contactStatus = contacts[i]["status"];
+                    break;
+                }    
+            }
+
+            
+            chatHeader.innerHTML = contactName + " . " + contactStatus;
         
             const chatMessagesContainer = document.querySelector('.chat-messages');
             chatMessagesContainer.innerHTML = '';
@@ -45,7 +55,7 @@ function clickableContacts() {
 
 function appendMessage(message, contact) {
     for (let i = 0; i < contacts.length; i++) {
-        if (contacts[i]["username"] === contact) {
+        if (contacts[i]["id"] == contact) {
             if ('messages' in contacts[i]) {
                 contacts[i]["messages"].push(message)
             }
@@ -71,7 +81,7 @@ const sendMessage = (e) => {
     const input = document.querySelector('.chat-input input');
     let message = {
         message: input.value.trim(),
-        receiver: activeContact.innerHTML,
+        receiver: activeContact.id,
         timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
     }
     if (message['message']) {
@@ -82,7 +92,7 @@ const sendMessage = (e) => {
         chatMessages.appendChild(newMessage);
         input.value = '';
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
-        appendMessage(message, message['receiver']);
+        appendMessage(message, message["receiver"]);
 
         // Sending message to the server
         socket.emit("send_message", message)
@@ -122,6 +132,7 @@ async function fetchContacts() {
         let data = await response.json();
         data.forEach(element => {
         const messageDiv = document.createElement('div');
+        messageDiv.id = element["id"];
         messageDiv.classList.add('contact');
         messageDiv.textContent = element["username"];
         contactSectionContainer.appendChild(messageDiv);
@@ -136,7 +147,7 @@ fetchContacts();
 socket.on("send_message", function(message) {
     appendMessage(message, message["sender"])
     const activeContact = document.querySelector('.activeContact')
-    if (activeContact.innerHTML === message["sender"]) {
+    if (activeContact.id == message["sender"]) {
         const chatMessages = document.querySelector('.chat-messages');
         const newMessage = document.createElement('div');
         newMessage.classList.add('message');

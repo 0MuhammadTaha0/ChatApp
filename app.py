@@ -36,7 +36,7 @@ def fetch():
         #Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
         contacts = db.execute(
         """     
-            SELECT users.username FROM friendships
+            SELECT users.id, users.username, users.status  FROM friendships
             JOIN users ON users.id = CASE 
                 WHEN friendships.friendid = ? THEN friendships.userid 
                 ELSE friendships.friendid 
@@ -45,9 +45,17 @@ def fetch():
         """
         ,session["user_id"], session["user_id"])
 
+        for contact in contacts:
+            if contact["status"] == 1:
+                if contact["id"] in users:
+                    contact["status"] = "online"
+                else:
+                    contact["status"] = "offline"
+            else:
+                contact["status"] = ""
+
         #Loading messages
         for contact in contacts:
-            other = db.execute("SELECT id from users where username = ?", contact["username"])[0]["id"]
             contact["messages"] = db.execute(
             """     
                 SELECT users.username as sender, b.username as receiver, message, timestamp FROM messages
@@ -59,7 +67,7 @@ def fetch():
                 (messages.sender = ? and messages.receiver = ?)
                 ORDER BY messages.mid ASC;
             """
-            ,session["user_id"], other, other, session["user_id"])
+            ,session["user_id"], contact["id"], contact["id"], session["user_id"])
             
         if not contacts:
             return ('', 204)
@@ -197,7 +205,7 @@ def friends():
 # SocketIO
 # https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
 @socketio.on("connect")
-def on_connectt():
+def on_connect():
     users[session["user_id"]] = request.sid
 
 @socketio.on("disconnect")
@@ -208,12 +216,10 @@ def on_disconnect():
 
 @socketio.on("send_message")
 def on_send_message(message):
-    sender = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])[0]["username"]
-    receiver = db.execute("SELECT id FROM users WHERE username = ?", message["receiver"])[0]["id"]
-    message["sender"] = sender
-    if receiver in users:
-        socketio.emit("send_message", message, room=users[receiver])
-    db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], receiver, message["message"], message["timestamp"])
+    message["sender"] = session["user_id"]
+    if int(message["receiver"]) in users:
+        socketio.emit("send_message", message, room=users[int(message["receiver"])])
+    db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
     
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='192.168.18.28', port=5000, debug=True)
