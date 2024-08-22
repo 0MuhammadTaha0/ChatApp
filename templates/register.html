@@ -6,7 +6,7 @@
 
 {% block main %}
 <div class="container py-5 text-center">
-    <form action="/register" method="post">
+    <form action="/register" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" required name="username" placeholder="Username" type="text">
         </div>

@@ -154,3 +154,7 @@ body {
 #profile-pic, #default-pic {
     width: 200px;
 }
+
+#profile-pic {
+    width: 40px
+}

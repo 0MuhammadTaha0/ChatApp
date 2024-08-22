@@ -21,7 +21,9 @@
     <div class="chat-section">
         <div class="chat-header">
             <!-- Profile picture or header icon -->
-            <span class="profile-icon"></span>
+            <span class="profile-icon">
+                <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" id="profile-pic"></image>
+            </span>
             <span class="profile-name"><p></p></span>
         </div>
         <div class="chat-messages">
@@ -36,10 +38,6 @@
 {% endblock %}
 
 {% block script %}
-<script>
-    //Client's Username
-    let username = '{{ username|tojson }}'
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script type="text/javascript" src="/static/script.js"></script>
 {% endblock %}

@@ -30,6 +30,10 @@ function clickableContacts() {
             const chatMessagesContainer = document.querySelector('.chat-messages');
             chatMessagesContainer.innerHTML = '';
 
+            //Changing Default Dp
+            const dpContainer = document.querySelector('#profile-pic');
+            dpContainer.src = contact[i]["dp"];
+
             // Load messages
             for (let i = 0; i < contacts.length; i++) {
                 if (contacts[i]["username"] === contactName) {
@@ -49,6 +53,7 @@ function clickableContacts() {
                     }
                 }
             }
+
         });
     }
 }
@@ -56,15 +61,15 @@ function clickableContacts() {
 function appendMessage(message, contact) {
     for (let i = 0; i < contacts.length; i++) {
         if (contacts[i]["id"] == contact) {
-            if ('messages' in contacts[i]) {
+            // if ('messages' in contacts[i]) {
                 contacts[i]["messages"].push(message)
-            }
-            else {
-                contacts[i].push({
-                    key:   "messages",
-                    value: [message]
-                });
-            }
+            // }
+            // else {
+            //     contacts[i].push({
+            //         key:   "messages",
+            //         value: [message]
+            //     });
+            // }
         }
     }
 }
@@ -138,6 +143,19 @@ async function fetchContacts() {
         contactSectionContainer.appendChild(messageDiv);
         });
         contacts = data;
+        
+
+        for (let i = 0; i < contacts.length; i++) {
+            response = await fetch(`/fetchDp?id=${contacts[i]["id"]}`);
+            if (response.status == 204) {
+                contacts[i]["dp"] = "/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg";
+            } else {
+                let data = await response.blob();
+                const myFile = new File([data], contacts[i]["id"] + ".png", {type: "image/png"});
+                var url = URL.createObjectURL(myFile);
+                contacts[i]["dp"] = url;
+            }
+        }
         clickableContacts();
     }
 }

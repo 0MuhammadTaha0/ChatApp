@@ -36,7 +36,7 @@ def fetch():
         #Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
         contacts = db.execute(
         """     
-            SELECT users.id, users.username, users.status  FROM friendships
+            SELECT users.id, users.username, users.status FROM friendships
             JOIN users ON users.id = CASE 
                 WHEN friendships.friendid = ? THEN friendships.userid 
                 ELSE friendships.friendid 
@@ -73,12 +73,19 @@ def fetch():
             return ('', 204)
         return jsonify(contacts)
 
+@app.route('/fetchDp')
+def fetchDp():
+    id = request.args.get('id')
+    id = int(id)
+    file = db.execute("SELECT dp FROM users where id = ?", id)[0]["dp"]
+    # Continue From Here
+    return file, 200
 
 @app.route('/')
 @login_required
 def index():
     if request.method == "GET":
-        username = db.execute("SELECT username from users WHERE id = ?", session["user_id"])[0]["username"]
+        username = db.execute("SELECT username from users WHERE id = ?", session["user_id"])[0]
         return render_template("index.html", username=username)
     else:
         flash("TODO")
@@ -103,11 +110,16 @@ def register():
 
         username = request.form.get("username")
         password = generate_password_hash(request.form.get("password"))
-
-        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, password)
+        dp = request.files['file']
+        if dp:
+            dp = dp.read()
+        else:
+            dp = None
+        db.execute("INSERT INTO users (username, hash, dp) VALUES (?, ?, ?)", username, password, dp)
 
         user_id = db.execute("SELECT id FROM users WHERE username = ?",
                              request.form.get("username"))[0]["id"]
+        
         session["user_id"] = user_id
         return redirect("/")
     else:

@@ -2,7 +2,8 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
     username TEXT NOT NULL,
     hash TEXT NOT NULL,
-    status INTEGER default 1, 
+    status INTEGER default 1,
+    dp BLOB,
     CHECK (status in (0, 1))
 );
 
