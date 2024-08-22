@@ -77,7 +77,12 @@ def fetch():
 def fetchDp():
     id = request.args.get('id')
     id = int(id)
-    file = db.execute("SELECT dp FROM users where id = ?", id)[0]["dp"]
+    file = db.execute("SELECT dp FROM users where id = ?", id)
+    if not file:
+        return "", 204
+    file = file[0]["dp"]
+    if not file:
+        return "", 204
     # Continue From Here
     return file, 200
 

@@ -1,5 +1,5 @@
 const socket = io();
-let contacts
+let contacts = {}
 const chatInputForm = document.querySelector('.chat-input')
 
 function clickableContacts() {
@@ -32,7 +32,7 @@ function clickableContacts() {
 
             //Changing Default Dp
             const dpContainer = document.querySelector('#profile-pic');
-            dpContainer.src = contact[i]["dp"];
+            dpContainer.src = contacts[i]["dp"];
 
             // Load messages
             for (let i = 0; i < contacts.length; i++) {
@@ -125,6 +125,8 @@ icons[4].onclick = function(){
 location.href='/logout';
 };
 
+
+
 async function fetchContacts() {
     const contactSectionContainer = document.querySelector('.contacts-section');
     let response = await fetch('/fetchContacts');
@@ -157,6 +159,7 @@ async function fetchContacts() {
             }
         }
         clickableContacts();
+        
     }
 }
 
