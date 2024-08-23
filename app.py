@@ -72,7 +72,7 @@ def fetch():
             """
             ,session["user_id"], contact["id"], contact["id"], session["user_id"])
     
-        return jsonify(contacts)
+        return jsonify(contacts), 200
 
 @app.route('/fetchDp')
 @login_required
@@ -250,6 +250,16 @@ def friends():
         flash("Friend Added!")
         return redirect("/")
     
+@app.route("/upload/message", methods=["POST"])
+@login_required
+def message_upload():
+    print(request.form.get("message"))
+    print(request.form.get("receiver"))
+    print(request.form.get("timestamp"))
+    return {"fid" : 2}, 200
+
+    
+
 # SocketIO
 # https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
 @socketio.on("connect")
@@ -262,12 +272,12 @@ def on_disconnect():
     # Forget any user_id
     session.clear()
 
-@socketio.on("send_message")
-def on_send_message(message):
-    message["sender"] = session["user_id"]
-    if int(message["receiver"]) in users:
-        socketio.emit("send_message", message, room=users[int(message["receiver"])])
-    db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
+# @socketio.on("send_message")
+# def on_send_message(message):
+#     message["sender"] = session["user_id"]
+#     if int(message["receiver"]) in users:
+#         socketio.emit("send_message", message, room=users[int(message["receiver"])])
+#     db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
     
 if __name__ == "__main__":
     socketio.run(app, host='192.168.18.28', port=5000, debug=True)

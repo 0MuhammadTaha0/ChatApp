@@ -1,3 +1,4 @@
+// Initializing FlaskSocketIO
 const socket = io();
 let contacts = {}
 const chatInputForm = document.querySelector('.chat-input')
@@ -7,9 +8,11 @@ async function fileClickListener(fid, name, mimetype) {
     if (response.status == 204) {
         
     } else {
+        // BLOB to FILE
         let data = await response.blob();
         const myFile = new File([data], name, {type: mimetype});
         
+        // Download Pop Up
         var url = URL.createObjectURL(myFile);
         const link = document.createElement('a')
 
@@ -109,31 +112,73 @@ const sendMessage = (e) => {
     if (!activeContact) {
         return            
     }
+    
+    const fileInput = document.querySelector('#file-input')
+    const textInput = document.querySelector('#message-input');
+    const receiverInput = document.querySelector('#receiver-input');
+    const timestampInput = document.querySelector('#timestamp-input');
 
-    const input = document.querySelector('.chat-input input');
-    let message = {
-        message: input.value.trim(),
-        receiver: activeContact.id,
-        timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
-    }
-    if (message['message']) {
+    const textInputValue = textInput.value.trim();
+
+    textInput.value = textInputValue;
+    receiverInput.value = activeContact.id;
+    timestampInput.value = new Date().toISOString().replace("T"," ").substring(0, 19);
+
+    // https://stackoverflow.com/questions/74195369/post-request-form-data-without-reloading-page-flask-fetch
+    const formData = new FormData(e.target);
+
+    fetch("/upload/message", {
+        'method': 'POST', 
+        'body': formData
+    }).then(response => response.json()
+    .then(data => {
+    
         const chatMessages = document.querySelector('.chat-messages');
         const newMessage = document.createElement('div');
-        newMessage.classList.add('message');
-        newMessage.textContent = message['message'];
+        let message = {};
+        if (fileInput) {
+            let filename = "";
+            message = {
+                message: textInputValue,
+                receiver: activeContact.id,
+                timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
+            }
+            if (fileInput.files.length != 0) {
+                // If File is given
+                filename = fileInput.files[0].name;
+                message["fid"] = data["fid"];
+                message["name"] = filename;
+                message["mimetype"] = fileInput.files[0].mimetype;
+                // implement Click to Download 
+                newMessage.addEventListener('click', function() {
+                    fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
+                });
+                filename = filename + " ";
+            }
+
+            newMessage.classList.add('file');
+            newMessage.textContent =  filename +  textInputValue;
+
+        } else {
+            newMessage.classList.add('message');
+            newMessage.textContent = textInputValue;
+            message = {
+                message: textInputValue,
+                receiver: activeContact.id,
+                timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
+            }
+        }
+        
         chatMessages.appendChild(newMessage);
-        input.value = '';
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
-        appendMessage(message, message["receiver"]);
 
-        // Sending message to the server
-        socket.emit("send_message", message)
-
-    }
+        appendMessage(message, activeContact.id);
+        fileInput.value = "";
+        textInput.value = "";
+        receiverInput.value = "";
+        timestampInput.value = "";
+    }));
 }
-
-
-
 
 chatInputForm.addEventListener('submit', sendMessage)
 
@@ -151,7 +196,6 @@ location.href='/settings';
 icons[4].onclick = function(){
 location.href='/logout';
 };
-
 
 
 async function fetchContacts() {
@@ -173,7 +217,6 @@ async function fetchContacts() {
         });
         contacts = data;
         
-
         for (let i = 0; i < contacts.length; i++) {
             response = await fetch(`/fetchDp?id=${contacts[i]["id"]}`);
             if (response.status == 204) {

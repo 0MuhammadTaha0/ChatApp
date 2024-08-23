@@ -16,9 +16,9 @@ JOIN users ON users.id = messages.sender
 JOIN users b ON b.id = messages.receiver
 FULL OUTER JOIN File ON File.fid = messages.fid
 WHERE
-(messages.sender = ? and messages.receiver = ?)
+(messages.sender = 3 and messages.receiver = 6)
 OR
-(messages.sender = ? and messages.receiver = ?)
+(messages.sender = 6 and messages.receiver = 3)
 ORDER BY messages.mid ASC;
 
 
@@ -61,3 +61,23 @@ ORDER BY messages.mid ASC;
 //         value: [message]
 //     });
 // }
+
+    // let message = {
+    //     message: input.value.trim(),
+    //     receiver: activeContact.id,
+    //     timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
+    // }
+    // if (message['message']) {
+    //     const chatMessages = document.querySelector('.chat-messages');
+    //     const newMessage = document.createElement('div');
+    //     newMessage.classList.add('message');
+    //     newMessage.textContent = message['message'];
+    //     chatMessages.appendChild(newMessage);
+    //     input.value = '';
+    //     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+    //     appendMessage(message, message["receiver"]);
+
+    //     // Sending message to the server
+    //     socket.emit("send_message", message)
+
+    // }

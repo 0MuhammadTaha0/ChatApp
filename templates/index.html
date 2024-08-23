@@ -29,9 +29,14 @@
         <div class="chat-messages">
             <!-- Messages will appear here -->
         </div>
-        <form class="chat-input">
-            <input required type="text" placeholder="Type a message...">
-            <button type="submit" class="send-button">▶</button>
+        <form action="/upload/message" class="chat-input" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input"/>
+            <input required type="text" name="message" placeholder="Type a message..." id="message-input">
+
+            <input type="hidden" name="receiver" id="receiver-input">
+            <input type="hidden" name="timestamp" id="timestamp-input">
+
+            <button type="submit" id="submit-button" class="send-button">▶</button>
         </form>
     </div>
 </div>

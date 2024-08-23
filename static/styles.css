@@ -89,7 +89,7 @@ body {
     
 }
 
-.chat-input input {
+#message-input {
     flex-grow: 1;
     height: 40px;
     border: 1px solid #ddd;
