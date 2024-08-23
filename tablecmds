@@ -29,8 +29,17 @@ CREATE TABLE messages(
     receiver INTEGER NOT NULL,
     message TEXT NOT NULL,
     timestamp TEXT NOT NULL,
+    fid INTEGER,
     FOREIGN KEY (sender) REFERENCES users(id),
-    FOREIGN KEY (receiver) REFERENCES users(id)
+    FOREIGN KEY (receiver) REFERENCES users(id),
+    FOREIGN KEY (fid) REFERENCES File(fid)
+);
+
+CREATE TABLE File(
+    fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    file BLOB,
+    name TEXT NOT NULL,
+    mimetype TEXT NOT NULL 
 );
 
 --COPY

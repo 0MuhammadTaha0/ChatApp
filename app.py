@@ -45,6 +45,9 @@ def fetch():
         """
         ,session["user_id"], session["user_id"])
 
+        if not contacts:
+            return ('', 204)
+
         for contact in contacts:
             if contact["status"] == 1:
                 if contact["id"] in users:
@@ -54,13 +57,13 @@ def fetch():
             else:
                 contact["status"] = ""
 
-        #Loading messages
-        for contact in contacts:
+            #Loading messages
             contact["messages"] = db.execute(
             """     
-                SELECT users.username as sender, b.username as receiver, message, timestamp FROM messages
+                SELECT users.username as sender, b.username as receiver, message, timestamp, File.fid, File.name, File.mimetype FROM messages
                 JOIN users ON users.id = messages.sender
                 JOIN users b ON b.id = messages.receiver
+                FULL OUTER JOIN File ON File.fid = messages.fid
                 WHERE
                 (messages.sender = ? and messages.receiver = ?)
                 OR
@@ -68,12 +71,11 @@ def fetch():
                 ORDER BY messages.mid ASC;
             """
             ,session["user_id"], contact["id"], contact["id"], session["user_id"])
-            
-        if not contacts:
-            return ('', 204)
+    
         return jsonify(contacts)
 
 @app.route('/fetchDp')
+@login_required
 def fetchDp():
     id = request.args.get('id')
     id = int(id)
@@ -81,6 +83,35 @@ def fetchDp():
     if not file:
         return "", 204
     file = file[0]["dp"]
+    if not file:
+        return "", 204
+    # Continue From Here
+    return file, 200
+
+@app.route('/fetchFile')
+@login_required
+def fetchFile():
+    fid = request.args.get('fid')
+    fid = int(fid)
+    
+    check = db.execute(
+            """     
+                SELECT fid FROM messages
+                WHERE
+                (messages.sender = ? or messages.receiver = ?)
+                AND 
+                fid = ?
+
+            """
+            ,session["user_id"], session["user_id"], fid)
+    
+    if len(check) != 1:
+        return "", 204
+
+    file = db.execute("SELECT file FROM File where fid = ?", fid)
+    if not file:
+        return "", 204
+    file = file[0]["file"]
     if not file:
         return "", 204
     # Continue From Here

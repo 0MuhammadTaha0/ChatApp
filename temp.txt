@@ -8,3 +8,56 @@
 
 {% endblock %}
 
++ ".png"
+ , {type: "image/png"}
+
+SELECT users.username as sender, b.username as receiver, message, timestamp, File.fid, File.name, File.mimetype FROM messages
+JOIN users ON users.id = messages.sender
+JOIN users b ON b.id = messages.receiver
+FULL OUTER JOIN File ON File.fid = messages.fid
+WHERE
+(messages.sender = ? and messages.receiver = ?)
+OR
+(messages.sender = ? and messages.receiver = ?)
+ORDER BY messages.mid ASC;
+
+
+SELECT users.username as sender, b.username as receiver, message, timestamp FROM messages
+JOIN users ON users.id = messages.sender
+JOIN users b ON b.id = messages.receiver
+WHERE
+(messages.sender = 3 and messages.receiver = 4)
+OR
+(messages.sender = 4 and messages.receiver = 3)
+ORDER BY messages.mid ASC;
+
+// function fileClickListener(fid, name, mimetype) {
+//     let id = fid;
+//     fetch(`/fetchFile?fid=${id}`)
+//     .then(response => response.blob()
+//     .then(data => {
+//         let filename = name
+//         let filemimetype = mimetype
+//         const myFile = new File([data], filename, {type: filemimetype});
+        
+//         var url = URL.createObjectURL(myFile);
+//         const link = document.createElement('a')
+
+//         link.href = url
+//         link.download = name
+//         document.body.appendChild(link)
+//         link.click()
+        
+//         document.body.removeChild(link)
+//         window.URL.revokeObjectURL(url)
+//     }));
+// }
+
+// if ('messages' in contacts[i]) {
+// }
+// else {
+//     contacts[i].push({
+//         key:   "messages",
+//         value: [message]
+//     });
+// }

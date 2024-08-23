@@ -2,6 +2,27 @@ const socket = io();
 let contacts = {}
 const chatInputForm = document.querySelector('.chat-input')
 
+async function fileClickListener(fid, name, mimetype) {
+    let response = await fetch(`/fetchFile?fid=${fid}`);
+    if (response.status == 204) {
+        
+    } else {
+        let data = await response.blob();
+        const myFile = new File([data], name, {type: mimetype});
+        
+        var url = URL.createObjectURL(myFile);
+        const link = document.createElement('a')
+
+        link.href = url
+        link.download = name
+        document.body.appendChild(link)
+        link.click()
+        
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+    }
+}
+
 function clickableContacts() {
     //Making contacts clickable and updating chat header
     const contact = document.querySelectorAll('.contact')
@@ -42,10 +63,22 @@ function clickableContacts() {
 
                         // Append the messages
                         messages.forEach(function(message) {
-                            const messageDiv = document.createElement('div');
-                            messageDiv.classList.add('message');
-                            messageDiv.textContent = message["message"];
-                            chatMessagesContainer.appendChild(messageDiv);
+                            if (message['fid']) {
+                                const messageDiv = document.createElement('div');
+                                messageDiv.classList.add('file');
+                                messageDiv.textContent = message["name"];
+                                chatMessagesContainer.appendChild(messageDiv);
+                                messageDiv.addEventListener('click', function() {
+                                    fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
+                                });
+
+                            } else {
+                                const messageDiv = document.createElement('div');
+                                messageDiv.classList.add('message');
+                                messageDiv.textContent = message["message"];
+                                chatMessagesContainer.appendChild(messageDiv);
+                            }
+
                         });
 
                         // Scroll to the bottom of the chat
@@ -58,18 +91,12 @@ function clickableContacts() {
     }
 }
 
+
+
 function appendMessage(message, contact) {
     for (let i = 0; i < contacts.length; i++) {
         if (contacts[i]["id"] == contact) {
-            // if ('messages' in contacts[i]) {
-                contacts[i]["messages"].push(message)
-            // }
-            // else {
-            //     contacts[i].push({
-            //         key:   "messages",
-            //         value: [message]
-            //     });
-            // }
+            contacts[i]["messages"].push(message)
         }
     }
 }
@@ -153,7 +180,7 @@ async function fetchContacts() {
                 contacts[i]["dp"] = "/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg";
             } else {
                 let data = await response.blob();
-                const myFile = new File([data], contacts[i]["id"] + ".png", {type: "image/png"});
+                const myFile = new File([data], contacts[i]["id"]);
                 var url = URL.createObjectURL(myFile);
                 contacts[i]["dp"] = url;
             }
@@ -168,12 +195,26 @@ fetchContacts();
 socket.on("send_message", function(message) {
     appendMessage(message, message["sender"])
     const activeContact = document.querySelector('.activeContact')
+    // If you have tha contact opened
     if (activeContact.id == message["sender"]) {
-        const chatMessages = document.querySelector('.chat-messages');
-        const newMessage = document.createElement('div');
-        newMessage.classList.add('message');
-        newMessage.textContent = message['message'];
-        chatMessages.appendChild(newMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // If message is a file
+        if (message["fid"]) {
+            const chatMessagesContainer = document.querySelector('.chat-messages');
+            const newFile = document.createElement('div');
+            newFile.classList.add('file');
+            newFile.textContent = message["name"];
+            chatMessagesContainer.appendChild(newFile);
+            newFile.addEventListener('click', function() {
+                fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
+            });
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;    
+        } else {
+            const chatMessagesContainer = document.querySelector('.chat-messages');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message');
+            newMessage.textContent = message['message'];
+            chatMessagesContainer.appendChild(newMessage);
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
     }
 });
