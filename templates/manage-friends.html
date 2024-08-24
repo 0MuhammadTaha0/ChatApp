@@ -1,0 +1,24 @@
+{% extends "friends.html" %}
+
+{% block title %}
+    Manage Friends
+{% endblock %}
+
+{% block content %}
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-start">Username</th>
+            <th class="text-end">Unfriend</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for friend in friends %}
+        <tr>
+            <td class="text-start">{{ friend.username }}</td>
+            <td class="text-end"><button class="btn btn-primary">Unfriend</button></td>
+        </tr>
+        {% endfor %}  
+    </tbody>
+</table>
+{% endblock %}

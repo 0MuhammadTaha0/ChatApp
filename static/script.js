@@ -185,15 +185,15 @@ chatInputForm.addEventListener('submit', sendMessage)
 //Implementing icons
 const icons = document.querySelectorAll('.icon')
 
-icons[2].onclick = function(){
+icons[0].onclick = function(){
 location.href='/friends/add';
 };
 
-icons[3].onclick = function(){
+icons[1].onclick = function(){
 location.href='/settings';
 };
 
-icons[4].onclick = function(){
+icons[2].onclick = function(){
 location.href='/logout';
 };
 

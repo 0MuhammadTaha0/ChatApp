@@ -1,0 +1,53 @@
+{% extends "friends.html" %}
+
+{% block title %}
+    Friend Requests
+{% endblock %}
+
+{% block content %}
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-start">Username</th>
+            <th class="text-end">Accept</th>
+            <th class="text-end">Decline</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for friend_requests in friend_requests %}
+            <tr id = '{{ friend_requests.frid }}'>
+                <td class="text-start">{{ friend_requests.username }}</td>
+                <td class="text-end"><button class="btn btn-primary accept">Accept</button></td>
+                <td class="text-end"><button class="btn btn-primary decline">Decline</button></td>
+            </tr>  
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block script %}
+<script>
+    async function completeRequest(frid, status) {
+        let response = await fetch(`/completeFriendRequest?frid=${frid}&status=${status}`);
+        if (response.status == 204) {
+            
+        } else {
+            document.getElementById(frid).remove();
+        }
+    }
+
+    const accept = document.querySelectorAll(".accept");
+    const decline = document.querySelectorAll(".decline");
+
+    for (let i = 0; i < accept.length; i++) {
+        accept[i].addEventListener("click", function () {
+            completeRequest(accept[i].parentElement.parentElement.id, 1)
+        });
+
+        decline[i].addEventListener("click", function () {
+            completeRequest(decline[i].parentElement.parentElement.id, 0)
+        });
+        
+    }
+</script>
+{% endblock %}

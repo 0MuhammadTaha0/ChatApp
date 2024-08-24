@@ -59,9 +59,10 @@ CREATE TABLE friendships (
     FOREIGN KEY (friendid) REFERENCES users(id)
 );
 CREATE TABLE friend_requests(
+    frid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     userid INTEGER,
     friendid INTEGER,
-    PRIMARY KEY (userid, friendid),
+    UNIQUE (userid, friendid),
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (friendid) REFERENCES users(id)
 );

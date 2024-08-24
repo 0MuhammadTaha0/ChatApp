@@ -1,9 +1,10 @@
 from cs50 import SQL
 from flask import Flask, jsonify, flash, redirect, render_template, request, session
 from flask_session import Session
-from werkzeug.security import check_password_hash, generate_password_hash
-from helpers import login_required
 from flask_socketio import SocketIO
+from helpers import login_required
+from werkzeug.security import check_password_hash, generate_password_hash
+
 
 # Configure application and SocketIO
 app = Flask(__name__)
@@ -29,6 +30,7 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 @app.route('/fetchContacts')
 @login_required
@@ -74,6 +76,7 @@ def fetch():
     
         return jsonify(contacts), 200
 
+
 @app.route('/fetchDp')
 @login_required
 def fetchDp():
@@ -87,6 +90,7 @@ def fetchDp():
         return "", 204
     # Continue From Here
     return file, 200
+
 
 @app.route('/fetchFile')
 @login_required
@@ -117,15 +121,46 @@ def fetchFile():
     # Continue From Here
     return file, 200
 
+
+@app.route('/completeFriendRequest')
+@login_required
+def completeFriendRequest():
+    frid = request.args.get('frid')
+    status = request.args.get('status')
+    frid = int(frid)
+    status = int(status)
+
+    check = db.execute(
+        """     
+            SELECT frid FROM friend_requests
+            WHERE
+            friend_requests.friendid = ?
+            AND 
+            frid = ?
+
+        """
+        ,session["user_id"], frid)
+    
+    if len(check) != 1:
+        return "", 204
+    else:
+        if status == 1:
+            userid = db.execute("SELECT userid FROM friend_requests where frid = ?", frid)[0]["userid"]
+            db.execute("INSERT INTO friendships (userid, friendid) VALUES (?, ?)", userid, session["user_id"])
+            db.execute("DELETE FROM friend_requests WHERE frid = ?", frid)
+            return "", 200
+        else:
+            db.execute("DELETE FROM friend_requests WHERE frid = ?", frid)
+            return "", 200
+    
+
+
 @app.route('/')
 @login_required
 def index():
-    if request.method == "GET":
-        username = db.execute("SELECT username from users WHERE id = ?", session["user_id"])[0]
-        return render_template("index.html", username=username)
-    else:
-        flash("TODO")
-        return redirect("/")
+    username = db.execute("SELECT username from users WHERE id = ?", session["user_id"])[0]
+    return render_template("index.html", username=username)
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -204,6 +239,7 @@ def login():
     else:
         return render_template("login.html")
     
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -211,9 +247,10 @@ def logout():
     # Redirect user to login form
     return redirect("/login")
 
+
 @app.route("/friends/add", methods=["GET", "POST"])
 @login_required
-def friends():
+def add_friends():
     if request.method == "GET":
         return render_template("add-friends.html")
     else:
@@ -246,10 +283,43 @@ def friends():
             return redirect("/friends/add")
 
         #Making friendship
-        db.execute("INSERT into friendships (userid, friendid) VALUES (?, ?)", session["user_id"], userid)
-        flash("Friend Added!")
-        return redirect("/")
+        db.execute("INSERT into friend_requests (userid, friendid) VALUES (?, ?)", session["user_id"], userid)
+
+        flash("Friend Request Sent!")
+        return redirect("/friends/add")
     
+@app.route("/friends/requests", methods=["GET"])
+@login_required
+def friend_requests():
+
+    friend_requests = db.execute(
+        """     
+            SELECT friend_requests.frid, users.username FROM friend_requests
+            JOIN users ON users.id = friend_requests.userid 
+            WHERE friend_requests.friendid = (?);
+        """
+        , session["user_id"])
+
+    return render_template("friend-requests.html", friend_requests=friend_requests)
+
+
+@app.route("/friends", methods=["GET"])
+@login_required
+def get_friends():
+
+    friends = db.execute(
+        """     
+            SELECT users.username FROM friendships
+            JOIN users ON users.id = CASE 
+                WHEN friendships.friendid = ? THEN friendships.userid 
+                ELSE friendships.friendid 
+            END
+            WHERE ? IN (friendships.userid, friendships.friendid);
+        """
+        ,session["user_id"], session["user_id"])
+
+    return render_template("manage-friends.html", friends=friends)
+
 @app.route("/upload/message", methods=["POST"])
 @login_required
 def message_upload():
@@ -270,13 +340,13 @@ def message_upload():
     db.execute("INSERT INTO messages (sender, receiver, message, timestamp, fid) VALUES (?, ?, ?, ?, ?)", session["user_id"], request.form.get("receiver"), request.form.get("message"), request.form.get("timestamp"), fid)
     return {"fid" : fid}, 200
 
-    
 
 # SocketIO
- # https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
+# https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
 @socketio.on("connect")
 def on_connect():
     users[session["user_id"]] = request.sid
+
 
 @socketio.on("disconnect")
 def on_disconnect():
@@ -284,12 +354,6 @@ def on_disconnect():
     # Forget any user_id
     session.clear()
 
-# @socketio.on("send_message")
-# def on_send_message(message):
-#     message["sender"] = session["user_id"]
-#     if int(message["receiver"]) in users:
-#         socketio.emit("send_message", message, room=users[int(message["receiver"])])
-#     db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
     
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

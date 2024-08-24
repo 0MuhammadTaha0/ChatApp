@@ -6,9 +6,7 @@
 
 {% block main %}
 <div class="mycontainer">
-    <div class="sidebar">
-        <button class="icon">C</button>
-        <button class="icon">G</button>
+    <div class="sidebar">    
         <button class="icon">F</button>
         <button class="icon">⚙</button>
         <button class="icon">L</button>
@@ -32,10 +30,8 @@
         <form action="/upload/message" class="chat-input" enctype="multipart/form-data">
             <input type="file" name="file" id="file-input"/>
             <input required type="text" name="message" placeholder="Type a message..." id="message-input">
-
             <input type="hidden" name="receiver" id="receiver-input">
             <input type="hidden" name="timestamp" id="timestamp-input">
-
             <button type="submit" id="submit-button" class="send-button">▶</button>
         </form>
     </div>

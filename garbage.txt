@@ -89,3 +89,5 @@ ORDER BY messages.mid ASC;
 #     if int(message["receiver"]) in users:
 #         socketio.emit("send_message", message, room=users[int(message["receiver"])])
 #     db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
+
+<button class="btn btn-primary accept">Accept</button>
