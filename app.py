@@ -253,15 +253,27 @@ def friends():
 @app.route("/upload/message", methods=["POST"])
 @login_required
 def message_upload():
-    print(request.form.get("message"))
-    print(request.form.get("receiver"))
-    print(request.form.get("timestamp"))
-    return {"fid" : 2}, 200
+    fid = None
+    if not request.files["file"].filename == '':
+        file = request.files["file"]
+        fid = db.execute("INSERT INTO File (file, name, mimetype) VALUES (?, ?, ?)", file.read(), file.filename, file.mimetype)        
+    
+    message = {}
+    message["sender"] = session["user_id"]
+    message["message"] = request.form.get("message")
+    message["receiver"] = request.form.get("receiver")
+    message["timestamp"] = request.form.get("timesstamp")
+    message["fid"] = fid
+
+    if int(request.form.get("receiver")) in users:
+        socketio.emit("send_message", message, room=users[int(request.form.get("receiver"))])
+    db.execute("INSERT INTO messages (sender, receiver, message, timestamp, fid) VALUES (?, ?, ?, ?, ?)", session["user_id"], request.form.get("receiver"), request.form.get("message"), request.form.get("timestamp"), fid)
+    return {"fid" : fid}, 200
 
     
 
 # SocketIO
-# https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
+ # https://stackoverflow.com/questions/58468997/use-uid-to-emit-on-flask-socketio
 @socketio.on("connect")
 def on_connect():
     users[session["user_id"]] = request.sid
@@ -280,4 +292,4 @@ def on_disconnect():
 #     db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
     
 if __name__ == "__main__":
-    socketio.run(app, host='192.168.18.28', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

@@ -69,7 +69,7 @@ function clickableContacts() {
                             if (message['fid']) {
                                 const messageDiv = document.createElement('div');
                                 messageDiv.classList.add('file');
-                                messageDiv.textContent = message["name"];
+                                messageDiv.textContent = message["name"] + " " + message["message"];
                                 chatMessagesContainer.appendChild(messageDiv);
                                 messageDiv.addEventListener('click', function() {
                                     fileClickListener(message['fid'], message['name'], message['mimetype']);                                    

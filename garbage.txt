@@ -81,3 +81,11 @@ ORDER BY messages.mid ASC;
     //     socket.emit("send_message", message)
 
     // }
+
+
+# @socketio.on("send_message")
+# def on_send_message(message):
+#     message["sender"] = session["user_id"]
+#     if int(message["receiver"]) in users:
+#         socketio.emit("send_message", message, room=users[int(message["receiver"])])
+#     db.execute("INSERT INTO messages (sender, receiver, message, timestamp) VALUES (?, ?, ?, ?)", session["user_id"], message["receiver"], message["message"], message["timestamp"])
