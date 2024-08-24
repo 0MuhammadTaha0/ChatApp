@@ -127,8 +127,10 @@ def fetchFile():
 def completeFriendRequest():
     frid = request.args.get('frid')
     status = request.args.get('status')
+    userid = request.args.get('userid')
     frid = int(frid)
     status = int(status)
+    userid = int(userid)
 
     check = db.execute(
         """     
@@ -145,7 +147,6 @@ def completeFriendRequest():
         return "", 204
     else:
         if status == 1:
-            userid = db.execute("SELECT userid FROM friend_requests where frid = ?", frid)[0]["userid"]
             db.execute("INSERT INTO friendships (userid, friendid) VALUES (?, ?)", userid, session["user_id"])
             db.execute("DELETE FROM friend_requests WHERE frid = ?", frid)
             return "", 200
@@ -275,11 +276,19 @@ def add_friends():
             flash("You cannot be your own friend, duh!")
             return redirect("/friends/add")
 
+        # Checking if already friends
         user = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", session["user_id"], userid)
         friend = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", userid, session["user_id"])
 
         if len(user) != 0 or len(friend) != 0:
             flash("Already Friends")
+            return redirect("/friends/add")
+        
+        # Checking if already there is a friend request
+        user = db.execute("SELECT * from friend_requests WHERE userid = ? and friendid = ?", session["user_id"], userid)
+
+        if len(user) != 0:
+            flash("Friend request already exists!")
             return redirect("/friends/add")
 
         #Making friendship
@@ -288,13 +297,13 @@ def add_friends():
         flash("Friend Request Sent!")
         return redirect("/friends/add")
     
-@app.route("/friends/requests", methods=["GET"])
+@app.route("/friends/requests")
 @login_required
 def friend_requests():
 
     friend_requests = db.execute(
         """     
-            SELECT friend_requests.frid, users.username FROM friend_requests
+            SELECT friend_requests.frid, users.id, users.username FROM friend_requests
             JOIN users ON users.id = friend_requests.userid 
             WHERE friend_requests.friendid = (?);
         """
@@ -303,13 +312,13 @@ def friend_requests():
     return render_template("friend-requests.html", friend_requests=friend_requests)
 
 
-@app.route("/friends", methods=["GET"])
+@app.route("/friends")
 @login_required
 def get_friends():
 
     friends = db.execute(
         """     
-            SELECT users.username FROM friendships
+            SELECT friendships.fsid, users.id, users.username FROM friendships
             JOIN users ON users.id = CASE 
                 WHEN friendships.friendid = ? THEN friendships.userid 
                 ELSE friendships.friendid 
@@ -319,6 +328,31 @@ def get_friends():
         ,session["user_id"], session["user_id"])
 
     return render_template("manage-friends.html", friends=friends)
+
+
+@app.route("/unfriend")
+@login_required
+def unfriend():
+    fsid = request.args.get('fsid')
+    fsid = int(fsid)
+
+    check = db.execute(
+        """     
+            SELECT fsid FROM friendships
+            WHERE
+            (friendships.userid = ? or friendships.friendid = ?)
+            AND 
+            fsid = ?
+
+        """
+        ,session["user_id"], session["user_id"], fsid)
+    
+    if len(check) != 1:
+        return "", 204
+    else:
+        db.execute("DELETE FROM friendships WHERE fsid = ?", fsid)
+        return "", 200
+
 
 @app.route("/upload/message", methods=["POST"])
 @login_required

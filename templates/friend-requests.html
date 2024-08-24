@@ -16,7 +16,7 @@
     <tbody>
         {% for friend_requests in friend_requests %}
             <tr id = '{{ friend_requests.frid }}'>
-                <td class="text-start">{{ friend_requests.username }}</td>
+                <td id='{{ friend_requests.id }}' class="text-start">{{ friend_requests.username }}</td>
                 <td class="text-end"><button class="btn btn-primary accept">Accept</button></td>
                 <td class="text-end"><button class="btn btn-primary decline">Decline</button></td>
             </tr>  
@@ -27,8 +27,8 @@
 
 {% block script %}
 <script>
-    async function completeRequest(frid, status) {
-        let response = await fetch(`/completeFriendRequest?frid=${frid}&status=${status}`);
+    async function completeRequest(frid, status, userid) {
+        let response = await fetch(`/completeFriendRequest?frid=${frid}&status=${status}&userid=${userid}`);
         if (response.status == 204) {
             
         } else {
@@ -36,16 +36,18 @@
         }
     }
 
-    const accept = document.querySelectorAll(".accept");
-    const decline = document.querySelectorAll(".decline");
+    const acceptButton = document.querySelectorAll(".accept");
+    const declineButton = document.querySelectorAll(".decline");
 
-    for (let i = 0; i < accept.length; i++) {
-        accept[i].addEventListener("click", function () {
-            completeRequest(accept[i].parentElement.parentElement.id, 1)
+    for (let i = 0; i < acceptButton.length; i++) {
+        acceptButton[i].addEventListener("click", function () {
+            // userid = user who sent request
+            const userid = acceptButton[i].parentElement.parentElement.querySelector("td").id;
+            completeRequest(acceptButton[i].parentElement.parentElement.id, 1, userid);
         });
 
-        decline[i].addEventListener("click", function () {
-            completeRequest(decline[i].parentElement.parentElement.id, 0)
+        declineButton[i].addEventListener("click", function () {
+            completeRequest(declineButton[i].parentElement.parentElement.id, 0);
         });
         
     }

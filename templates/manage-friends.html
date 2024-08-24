@@ -14,11 +14,33 @@
     </thead>
     <tbody>
         {% for friend in friends %}
-        <tr>
-            <td class="text-start">{{ friend.username }}</td>
+        <tr id="{{ friend.fsid }}">
+            <td id="{{ friend.id }}" class="text-start">{{ friend.username }}</td>
             <td class="text-end"><button class="btn btn-primary">Unfriend</button></td>
         </tr>
         {% endfor %}  
     </tbody>
 </table>
+{% endblock %}
+
+{% block script %}
+<script>
+    async function completeRequest(fsid) {
+        let response = await fetch(`/unfriend?fsid=${fsid}`);
+        if (response.status == 204) {
+            
+        } else {
+            document.getElementById(fsid).remove();
+        }
+    }
+
+    const unfriendButton = document.querySelectorAll("button");
+
+    for (let i = 0; i < unfriendButton.length; i++) {
+        unfriendButton[i].addEventListener("click", function () {
+            completeRequest(unfriendButton[i].parentElement.parentElement.id);
+        });
+        
+    }
+</script>
 {% endblock %}

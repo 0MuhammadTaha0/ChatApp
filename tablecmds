@@ -52,9 +52,10 @@ CREATE TABLE users (
 );
 CREATE UNIQUE INDEX username on users(username);
 CREATE TABLE friendships (
+    fsid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     userid INTEGER,
     friendid INTEGER,
-    PRIMARY KEY (userid, friendid),
+    UNIQUE (userid, friendid),
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (friendid) REFERENCES users(id)
 );
