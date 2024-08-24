@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+
+<div class="container py-5 text-center">
+    <form action="/settings" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="newUsername" placeholder="New Username" type="text">
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" class="form-control mx-auto w-auto" name="oldPassword" placeholder="Old Password" type="password">
+        </div>
+        <div class="mb-3">
+            <input autocomplete="new-password" class="form-control mx-auto w-auto" name="newPassword" placeholder="New Password" type="password">
+        </div>
+        <div class="mb-3">
+            <input autocomplete="new-password" class="form-control mx-auto w-auto" name="confirmation" placeholder="New Password (again)" type="password">
+        </div>
+        <div class="mb-3">
+            <select class="form-select mx-auto w-auto" name="status">
+                    <option disabled="" selected="">Online Status</option>
+                    <option value="0">Hide</option>
+                    <option value="1">Show</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" id="default-pic"></image>
+        </div>
+        <div class="mb-3">
+            <input  class="form-control mx-auto w-auto" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg" id="profile-pic">
+        </div>
+        <div class="mb-3">
+            <a href="/">Go to Dashboard?</a>
+        </div>
+        <button class="btn btn-primary" type="submit">Change</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        let defaultPic = document.getElementById("default-pic");
+        let profilePic = document.getElementById("profile-pic");
+
+        profilePic.onchange = function () {
+            defaultPic.src = URL.createObjectURL(profilePic.files[0]);
+        }
+    </script>
+{% endblock %}

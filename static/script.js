@@ -66,8 +66,8 @@ function clickableContacts() {
 
                         // Append the messages
                         messages.forEach(function(message) {
+                            const messageDiv = document.createElement('div');
                             if (message['fid']) {
-                                const messageDiv = document.createElement('div');
                                 messageDiv.classList.add('file');
                                 messageDiv.textContent = message["name"] + " " + message["message"];
                                 chatMessagesContainer.appendChild(messageDiv);
@@ -76,7 +76,6 @@ function clickableContacts() {
                                 });
 
                             } else {
-                                const messageDiv = document.createElement('div');
                                 messageDiv.classList.add('message');
                                 messageDiv.textContent = message["message"];
                                 chatMessagesContainer.appendChild(messageDiv);

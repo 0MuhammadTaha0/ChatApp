@@ -183,10 +183,17 @@ def register():
         username = request.form.get("username")
         password = generate_password_hash(request.form.get("password"))
         dp = request.files['file']
+        mimetype = None
         if dp:
-            dp = dp.read()
+            mimetype = dp.mimetype
+            if mimetype not in ["image/jpeg", "image/png", "image/jpg"]:
+                dp = None
+            else:
+                dp = dp.read()
         else:
             dp = None
+
+        
         db.execute("INSERT INTO users (username, hash, dp) VALUES (?, ?, ?)", username, password, dp)
 
         user_id = db.execute("SELECT id FROM users WHERE username = ?",
@@ -373,6 +380,81 @@ def message_upload():
         socketio.emit("send_message", message, room=users[int(request.form.get("receiver"))])
     db.execute("INSERT INTO messages (sender, receiver, message, timestamp, fid) VALUES (?, ?, ?, ?, ?)", session["user_id"], request.form.get("receiver"), request.form.get("message"), request.form.get("timestamp"), fid)
     return {"fid" : fid}, 200
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def get_settings():
+    if request.method == "GET":
+        return render_template("settings.html")
+    else:
+        if not request.form.get("newUsername") and not request.form.get("oldPassword") and not request.form.get("status") and not request.files['file']:
+            flash("Nothing to change!")
+            return redirect("/settings")
+
+        newUsername = None
+        newPassword = None
+        status = None
+        dp = None
+
+        if request.form.get("newUsername"):
+            check = db.execute("SELECT username FROM users WHERE username = ?",
+                              request.form.get("newUsername"))
+            if len(check) != 0:
+                flash("Username already exists!")
+                return redirect("/settings")
+            else:
+                newUsername = request.form.get("newUsername")
+        
+        if request.form.get("oldPassword"):
+            oldPassword = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])[0]["hash"]
+            if not check_password_hash(oldPassword, request.form.get("oldPassword")):
+                flash("Old Pasword does not match!")
+                return redirect("/settings")
+            
+            if request.form.get("newPassword") and request.form.get("confirmation"):
+                if request.form.get("newPassword") == request.form.get("confirmation"):
+                    newPassword = request.form.get("newPassword")
+                else:
+                    flash("New Password and Confimration does not match!")
+                    return redirect("/settings")
+            else:
+                flash("Enter Both New Password and Confimration!")
+                return redirect("/settings")
+        
+        if request.form.get("status"):
+            if request.form.get("status") in ["0", "1"]:
+                status = request.form.get("status")
+            else:
+                flash("Wrong status value!")
+                return redirect("/settings")
+            
+        dp = request.files['file']
+        if dp:
+            if dp.mimetype not in ["image/jpeg", "image/png", "image/jpg"]:
+                dp = None
+            else:
+                dp = dp.read()
+        else:
+            dp = None
+        
+        if newUsername:
+            db.execute("UPDATE users SET username = ? WHERE id = ?", newUsername, session["user_id"])
+        
+        if newPassword:
+            newPassword = generate_password_hash(newPassword)
+            db.execute("UPDATE users SET hash = ? WHERE id = ?", newPassword, session["user_id"])
+
+        if status:
+            status = int(status)
+            db.execute("UPDATE users SET status = ? WHERE id = ?", status, session["user_id"])
+
+        if dp:
+            db.execute("UPDATE users SET dp = ? WHERE id = ?", dp, session["user_id"])
+
+
+        flash("Change successful")
+        return redirect("/settings")
+
 
 
 # SocketIO
