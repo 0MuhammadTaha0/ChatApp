@@ -35,33 +35,32 @@ def after_request(response):
 @app.route('/fetchContacts')
 @login_required
 def fetch():
-        #Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
-        contacts = db.execute(
-        """     
+    # Fetching the friends from database either current user was in sending or receiving side (Chat-GPT used to simplify query)
+    contacts = db.execute(
+        """
             SELECT users.id, users.username, users.status FROM friendships
-            JOIN users ON users.id = CASE 
-                WHEN friendships.friendid = ? THEN friendships.userid 
-                ELSE friendships.friendid 
+            JOIN users ON users.id = CASE
+                WHEN friendships.friendid = ? THEN friendships.userid
+                ELSE friendships.friendid
             END
             WHERE ? IN (friendships.userid, friendships.friendid);
-        """
-        ,session["user_id"], session["user_id"])
+        """, session["user_id"], session["user_id"])
 
-        if not contacts:
-            return ('', 204)
+    if not contacts:
+        return ('', 204)
 
-        for contact in contacts:
-            if contact["status"] == 1:
-                if contact["id"] in users:
-                    contact["status"] = "online"
-                else:
-                    contact["status"] = "offline"
+    for contact in contacts:
+        if contact["status"] == 1:
+            if contact["id"] in users:
+                contact["status"] = "online"
             else:
-                contact["status"] = ""
+                contact["status"] = "offline"
+        else:
+            contact["status"] = ""
 
-            #Loading messages
-            contact["messages"] = db.execute(
-            """     
+        # Loading messages
+        contact["messages"] = db.execute(
+            """
                 SELECT users.username as sender, b.username as receiver, message, timestamp, File.fid, File.name, File.mimetype FROM messages
                 JOIN users ON users.id = messages.sender
                 JOIN users b ON b.id = messages.receiver
@@ -71,10 +70,9 @@ def fetch():
                 OR
                 (messages.sender = ? and messages.receiver = ?)
                 ORDER BY messages.mid ASC;
-            """
-            ,session["user_id"], contact["id"], contact["id"], session["user_id"])
-    
-        return jsonify(contacts), 200
+            """, session["user_id"], contact["id"], contact["id"], session["user_id"])
+
+    return jsonify(contacts), 200
 
 
 @app.route('/fetchDp')
@@ -88,7 +86,6 @@ def fetchDp():
     file = file[0]["dp"]
     if not file:
         return "", 204
-    # Continue From Here
     return file, 200
 
 
@@ -97,18 +94,18 @@ def fetchDp():
 def fetchFile():
     fid = request.args.get('fid')
     fid = int(fid)
-    
-    check = db.execute(
-            """     
-                SELECT fid FROM messages
-                WHERE
-                (messages.sender = ? or messages.receiver = ?)
-                AND 
-                fid = ?
 
-            """
-            ,session["user_id"], session["user_id"], fid)
-    
+    # Checking user access to the File
+    check = db.execute(
+        """
+            SELECT fid FROM messages
+            WHERE
+            (messages.sender = ? or messages.receiver = ?)
+            AND
+            fid = ?
+
+        """, session["user_id"], session["user_id"], fid)
+
     if len(check) != 1:
         return "", 204
 
@@ -118,7 +115,6 @@ def fetchFile():
     file = file[0]["file"]
     if not file:
         return "", 204
-    # Continue From Here
     return file, 200
 
 
@@ -132,28 +128,30 @@ def completeFriendRequest():
     status = int(status)
     userid = int(userid)
 
+    # Checking if friend request exists
     check = db.execute(
-        """     
+        """
             SELECT frid FROM friend_requests
             WHERE
             friend_requests.friendid = ?
-            AND 
+            AND
             frid = ?
 
-        """
-        ,session["user_id"], frid)
-    
+        """, session["user_id"], frid)
+
     if len(check) != 1:
         return "", 204
     else:
         if status == 1:
-            db.execute("INSERT INTO friendships (userid, friendid) VALUES (?, ?)", userid, session["user_id"])
+            # If to accept
+            db.execute("INSERT INTO friendships (userid, friendid) VALUES (?, ?)",
+                       userid, session["user_id"])
             db.execute("DELETE FROM friend_requests WHERE frid = ?", frid)
             return "", 200
         else:
+            # If to decline
             db.execute("DELETE FROM friend_requests WHERE frid = ?", frid)
             return "", 200
-    
 
 
 @app.route('/')
@@ -166,10 +164,11 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
+        # Input validations
         if not request.form.get("username") or not request.form.get("password") or not request.form.get("confirmation"):
             flash("Please Enter All Fields")
             return render_template("register.html")
-            
+
         if not (request.form.get("password") == request.form.get("confirmation")):
             flash("Password fields do not match!")
             return render_template("register.html")
@@ -184,6 +183,7 @@ def register():
         password = generate_password_hash(request.form.get("password"))
         dp = request.files['file']
         mimetype = None
+        # Checking if a valid photo file
         if dp:
             mimetype = dp.mimetype
             if mimetype not in ["image/jpeg", "image/png", "image/jpg"]:
@@ -193,12 +193,12 @@ def register():
         else:
             dp = None
 
-        
         db.execute("INSERT INTO users (username, hash, dp) VALUES (?, ?, ?)", username, password, dp)
 
         user_id = db.execute("SELECT id FROM users WHERE username = ?",
                              request.form.get("username"))[0]["id"]
-        
+
+        # Making session
         session["user_id"] = user_id
         return redirect("/")
     else:
@@ -207,6 +207,7 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # CS50x staff implemented
     """Log user in"""
 
     # Forget any user_id
@@ -217,7 +218,7 @@ def login():
         # Ensure username was submitted
         if not request.form.get("username"):
             flash("Must provide username.")
-            return render_template("login.html") 
+            return render_template("login.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
@@ -239,14 +240,13 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
-        
         # Redirect user to home page
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
-    
+
 
 @app.route("/logout")
 @login_required
@@ -266,7 +266,7 @@ def add_friends():
         if not username:
             flash("Please Enter Username")
             return redirect("/friends/add")
-        
+
         # Query database for username
         rows = db.execute(
             "SELECT * FROM users WHERE username = ?", username
@@ -278,43 +278,47 @@ def add_friends():
             return redirect("/friends/add")
 
         userid = db.execute("SELECT id from users where username = ?", username)[0]["id"]
-        
+
         if userid == session["user_id"]:
             flash("You cannot be your own friend, duh!")
             return redirect("/friends/add")
 
         # Checking if already friends
-        user = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", session["user_id"], userid)
-        friend = db.execute("SELECT * from friendships WHERE userid = ? and friendid = ?", userid, session["user_id"])
+        user = db.execute(
+            "SELECT * from friendships WHERE userid = ? and friendid = ?", session["user_id"], userid)
+        friend = db.execute(
+            "SELECT * from friendships WHERE userid = ? and friendid = ?", userid, session["user_id"])
 
         if len(user) != 0 or len(friend) != 0:
             flash("Already Friends")
             return redirect("/friends/add")
-        
+
         # Checking if already there is a friend request
-        user = db.execute("SELECT * from friend_requests WHERE userid = ? and friendid = ?", session["user_id"], userid)
+        user = db.execute(
+            "SELECT * from friend_requests WHERE userid = ? and friendid = ?", session["user_id"], userid)
 
         if len(user) != 0:
             flash("Friend request already exists!")
             return redirect("/friends/add")
 
-        #Making friendship
-        db.execute("INSERT into friend_requests (userid, friendid) VALUES (?, ?)", session["user_id"], userid)
+        # Making friendship
+        db.execute("INSERT into friend_requests (userid, friendid) VALUES (?, ?)",
+                   session["user_id"], userid)
 
         flash("Friend Request Sent!")
         return redirect("/friends/add")
-    
+
+
 @app.route("/friends/requests")
 @login_required
 def friend_requests():
-
+    # fetching friend requests
     friend_requests = db.execute(
-        """     
-            SELECT friend_requests.frid, users.id, users.username FROM friend_requests
-            JOIN users ON users.id = friend_requests.userid 
-            WHERE friend_requests.friendid = (?);
         """
-        , session["user_id"])
+            SELECT friend_requests.frid, users.id, users.username FROM friend_requests
+            JOIN users ON users.id = friend_requests.userid
+            WHERE friend_requests.friendid = (?);
+        """, session["user_id"])
 
     return render_template("friend-requests.html", friend_requests=friend_requests)
 
@@ -322,17 +326,16 @@ def friend_requests():
 @app.route("/friends")
 @login_required
 def get_friends():
-
+    # fetching friends
     friends = db.execute(
-        """     
+        """
             SELECT friendships.fsid, users.id, users.username FROM friendships
-            JOIN users ON users.id = CASE 
-                WHEN friendships.friendid = ? THEN friendships.userid 
-                ELSE friendships.friendid 
+            JOIN users ON users.id = CASE
+                WHEN friendships.friendid = ? THEN friendships.userid
+                ELSE friendships.friendid
             END
             WHERE ? IN (friendships.userid, friendships.friendid);
-        """
-        ,session["user_id"], session["user_id"])
+        """, session["user_id"], session["user_id"])
 
     return render_template("manage-friends.html", friends=friends)
 
@@ -343,17 +346,17 @@ def unfriend():
     fsid = request.args.get('fsid')
     fsid = int(fsid)
 
+    # Checking if user in that frienship
     check = db.execute(
-        """     
+        """
             SELECT fsid FROM friendships
             WHERE
             (friendships.userid = ? or friendships.friendid = ?)
-            AND 
+            AND
             fsid = ?
 
-        """
-        ,session["user_id"], session["user_id"], fsid)
-    
+        """, session["user_id"], session["user_id"], fsid)
+
     if len(check) != 1:
         return "", 204
     else:
@@ -367,8 +370,10 @@ def message_upload():
     fid = None
     if not request.files["file"].filename == '':
         file = request.files["file"]
-        fid = db.execute("INSERT INTO File (file, name, mimetype) VALUES (?, ?, ?)", file.read(), file.filename, file.mimetype)        
-    
+        fid = db.execute("INSERT INTO File (file, name, mimetype) VALUES (?, ?, ?)",
+                         file.read(), file.filename, file.mimetype)
+
+    # Creating message structure
     message = {}
     message["sender"] = session["user_id"]
     message["message"] = request.form.get("message")
@@ -376,10 +381,15 @@ def message_upload():
     message["timestamp"] = request.form.get("timesstamp")
     message["fid"] = fid
 
+    # If receiver is online
     if int(request.form.get("receiver")) in users:
+        # send message through socketio
         socketio.emit("send_message", message, room=users[int(request.form.get("receiver"))])
-    db.execute("INSERT INTO messages (sender, receiver, message, timestamp, fid) VALUES (?, ?, ?, ?, ?)", session["user_id"], request.form.get("receiver"), request.form.get("message"), request.form.get("timestamp"), fid)
-    return {"fid" : fid}, 200
+    # Save message in database
+    db.execute("INSERT INTO messages (sender, receiver, message, timestamp, fid) VALUES (?, ?, ?, ?, ?)",
+               session["user_id"], request.form.get("receiver"), request.form.get("message"), request.form.get("timestamp"), fid)
+    return {"fid": fid}, 200
+
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
@@ -387,6 +397,7 @@ def get_settings():
     if request.method == "GET":
         return render_template("settings.html")
     else:
+        # Checking if no inputs are given
         if not request.form.get("newUsername") and not request.form.get("oldPassword") and not request.form.get("status") and not request.files['file']:
             flash("Nothing to change!")
             return redirect("/settings")
@@ -396,22 +407,29 @@ def get_settings():
         status = None
         dp = None
 
+        # Checking if newUsername was entered
         if request.form.get("newUsername"):
+            # Checking if username already exists
             check = db.execute("SELECT username FROM users WHERE username = ?",
-                              request.form.get("newUsername"))
+                               request.form.get("newUsername"))
             if len(check) != 0:
                 flash("Username already exists!")
                 return redirect("/settings")
             else:
+                # save username to update later
                 newUsername = request.form.get("newUsername")
-        
+
+        # Checking if oldPassword was entered
         if request.form.get("oldPassword"):
-            oldPassword = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])[0]["hash"]
+            # Checking if it is correct
+            oldPassword = db.execute("SELECT hash FROM users WHERE id = ?",
+                                     session["user_id"])[0]["hash"]
             if not check_password_hash(oldPassword, request.form.get("oldPassword")):
                 flash("Old Pasword does not match!")
                 return redirect("/settings")
-            
+
             if request.form.get("newPassword") and request.form.get("confirmation"):
+                # If new password fields match
                 if request.form.get("newPassword") == request.form.get("confirmation"):
                     newPassword = request.form.get("newPassword")
                 else:
@@ -420,26 +438,31 @@ def get_settings():
             else:
                 flash("Enter Both New Password and Confimration!")
                 return redirect("/settings")
-        
+
+        # Check if status to be changed
         if request.form.get("status"):
             if request.form.get("status") in ["0", "1"]:
                 status = request.form.get("status")
             else:
                 flash("Wrong status value!")
                 return redirect("/settings")
-            
+
         dp = request.files['file']
+        # if file was entered
         if dp:
+            # If file is a valid photo
             if dp.mimetype not in ["image/jpeg", "image/png", "image/jpg"]:
                 dp = None
             else:
                 dp = dp.read()
         else:
             dp = None
-        
+
+        # Updating database on based off of how many entries were given
         if newUsername:
-            db.execute("UPDATE users SET username = ? WHERE id = ?", newUsername, session["user_id"])
-        
+            db.execute("UPDATE users SET username = ? WHERE id = ?",
+                       newUsername, session["user_id"])
+
         if newPassword:
             newPassword = generate_password_hash(newPassword)
             db.execute("UPDATE users SET hash = ? WHERE id = ?", newPassword, session["user_id"])
@@ -451,10 +474,8 @@ def get_settings():
         if dp:
             db.execute("UPDATE users SET dp = ? WHERE id = ?", dp, session["user_id"])
 
-
         flash("Change successful")
         return redirect("/settings")
-
 
 
 # SocketIO
@@ -470,6 +491,6 @@ def on_disconnect():
     # Forget any user_id
     session.clear()
 
-    
+
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
