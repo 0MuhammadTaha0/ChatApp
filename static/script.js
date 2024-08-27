@@ -31,7 +31,7 @@ function clickableContact(contactDiv, contact) {
 
     contactDiv.addEventListener('click', function() {
         // When clicked make it the active contact
-        const chatHeader = document.querySelector('.profile-name')
+        const chatHeader = document.querySelectorAll('.profile-content div')
         const activeContact = document.querySelector('.activeContact')
         if (activeContact) {
             activeContact.classList.remove('activeContact')
@@ -41,7 +41,8 @@ function clickableContact(contactDiv, contact) {
         let contactStatus = contact["status"];
 
         // Contact Header
-        chatHeader.innerHTML = contactName + " . " + contactStatus;
+        chatHeader[0].innerHTML = contactName;
+        chatHeader[1].innerHTML = contactStatus;
     
         const chatMessagesContainer = document.querySelector('.chat-messages');
         chatMessagesContainer.innerHTML = '';

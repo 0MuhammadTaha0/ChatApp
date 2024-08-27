@@ -7,7 +7,7 @@
 {% block stylesheet %}<link rel="stylesheet" href="/static/form-style.css">{% endblock %}
 
 {% block main %}
-<div class="container py-5 text-center fieldsContainer">
+<div class="container py-5 text-center registration-container">
     <form action="/register" method="post" enctype="multipart/form-data">
         
         <div class="mb-3">
@@ -20,15 +20,15 @@
             <input autocomplete="new-password" class="form-control mx-auto w-auto" required name="confirmation" placeholder="Password (again)" type="password">
         </div>
         <div class="mb-3" id="imageDiv">
-            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" id="default-pic"></image>
+            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" class="default-pic"></image>
         </div>
         <div class="mb-3">
-            <input  class="form-control mx-auto w-auto" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg" id="pic-file">
+            <input  class="pic-file form-control mx-auto w-auto" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg">
         </div>
         <div class="mb-3">
             <a href="/login">Login instead?</a>
         </div>
-        <button class="btn btn-primary" type="submit">Register</button>
+        <button class="btn" type="submit">Register</button>
     </form>
 </div>
 
@@ -36,8 +36,8 @@
 
 {% block script %}
     <script>
-        let defaultPic = document.getElementById("default-pic");
-        let profilePic = document.getElementById("pic-file");
+        let defaultPic = document.querySelector(".default-pic");
+        let profilePic = document.querySelector(".pic-file");
 
         profilePic.onchange = function () {
             defaultPic.src = URL.createObjectURL(profilePic.files[0]);

@@ -4,11 +4,13 @@
     Settings
 {% endblock %}
 
-{% block stylesheet %}<link rel="stylesheet" href="/static/dashboard-style.css">{% endblock %}
+{% block stylesheet %}
+    <link rel="stylesheet" href="/static/form-style.css">
+{% endblock %}
 
 {% block main %}
 
-<div class="container py-5 text-center">
+<div class="settings-container container py-5 text-center">
     <form action="/settings" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="newUsername" placeholder="New Username" type="text">
@@ -30,10 +32,10 @@
             </select>
         </div>
         <div class="mb-3">
-            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" class="profile-pic"></image>
+            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" class="default-pic"></image>
         </div>
         <div class="mb-3">
-            <input  class="form-control mx-auto w-auto profile-pic" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg">
+            <input  class="pic-file form-control mx-auto w-auto profile-pic" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg">
         </div>
         <div class="mb-3">
             <a href="/">Go to Dashboard?</a>
@@ -46,11 +48,15 @@
 
 {% block script %}
     <script>
-        let defaultPic = document.getElementById("default-pic");
-        let profilePic = document.getElementById("profile-pic");
+        addEventListener("DOMContentLoaded", (event) => {
+            let defaultPic = document.querySelector(".default-pic");
+            let profilePic = document.querySelector(".pic-file");
 
-        profilePic.onchange = function () {
-            defaultPic.src = URL.createObjectURL(profilePic.files[0]);
-        }
+            profilePic.onchange = function () {
+                defaultPic.src = URL.createObjectURL(profilePic.files[0]);
+            }
+            alert("You can choose to only enter the fields you want to change, and press submit.")
+        });
+        
     </script>
 {% endblock %}

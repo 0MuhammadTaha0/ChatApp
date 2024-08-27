@@ -2,17 +2,13 @@ body {
     height: 90vh;
     display: grid;
     place-items: center;
-    background-color: #121212;
-    /* background-image:url('/static/images/background.png');
-    background-attachment:fixed;
-    background-repeat: no-repeat;
-    background-size: cover; */
+    background-color: #1e1e1e;
 }
 
-#default-pic{
+.default-pic, .profile-pic{
     width: 150px;  
 }
-.fieldsContainer {
+.registration-container {
     height: 58vh;
     width: 80vh;
     display: grid;
@@ -22,7 +18,36 @@ body {
     border-radius: 1em;
     box-shadow: 0 0 1.25em 1.25em #c3c3c333;
 }
-button:active {
-    transform: translateY(2px);
+
+.settings-container {
+    height: 70vh;
+    width: 80vh;
+    display: grid;
+    place-items: center;
+    font-family:  sans-serif, Verdana ;
+    background-color: #28282B;
+    border-radius: 1em;
+    box-shadow: 0 0 1.25em 1.25em #c3c3c333;
 }
 
+.btn {
+    background-color: transparent;
+    color: #008080; 
+    border: 2px solid #008080;
+    border-radius: 4px;
+}
+
+.btn:hover {
+    background-color: #008080; 
+    border: 2px solid #008080;
+    color: white; 
+}
+.btn:active {
+    transform: translateY(2px);
+} 
+
+.form-select{
+    width: 650px;
+    height: 40px;
+    border-radius: 0.5em;
+}

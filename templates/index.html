@@ -9,9 +9,9 @@
 {% block main %}
 <div class="mycontainer">
     <div class="sidebar">    
-        <button class="icon">F</button>
+        <button class="icon">🤝</button>
         <button class="icon">⚙</button>
-        <button class="icon">L</button>
+        <button class="icon">↪</button>
     </div>
     
     <div class="contacts-section">
@@ -21,10 +21,15 @@
     <div class="chat-section">
         <div class="chat-header">
             <!-- Profile picture or header icon -->
-            <span class="profile-icon">
+            <span class="profile-icon-span">
                 <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" id="profile-icon"></image>
             </span>
-            <span class="profile-name"><p></p></span>
+            <span class="profile-content">
+                <div id="profile-content-name">
+                </div>
+                <div id="profile-content-status">
+                </div>
+            </span>
         </div>
         <div class="chat-messages">
             <!-- Messages will appear here -->
