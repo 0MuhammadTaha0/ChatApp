@@ -4,8 +4,10 @@
     Log In
 {% endblock %}
 
+{% block stylesheet %}<link rel="stylesheet" href="/static/form-style.css">{% endblock %}
+
 {% block main %}
-<div class="container py-5 text-center">
+<div class="container py-5 text-center fieldsContainer">
     <form action="/login" method="post">
         <div class="mb-3">
             <input autocomplete="off" required autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">

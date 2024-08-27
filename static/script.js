@@ -47,7 +47,7 @@ function clickableContact(contactDiv, contact) {
         chatMessagesContainer.innerHTML = '';
 
         //Changing Default Dp
-        const dpContainer = document.querySelector('#profile-pic');
+        const dpContainer = document.querySelector('#profile-icon');
         dpContainer.src = contact["dp"];
 
         // Load messages

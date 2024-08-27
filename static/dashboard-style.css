@@ -151,10 +151,16 @@ body {
         visibility:hidden;
     }
 }
-#profile-pic, #default-pic {
+
+
+#profile-icon {
+    width: 40px
+}
+
+.profile-pic {
     width: 200px;
 }
 
-#profile-pic {
-    width: 40px
+button:active {
+    transform: translateY(2px);
 }

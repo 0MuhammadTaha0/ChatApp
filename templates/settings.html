@@ -4,6 +4,8 @@
     Settings
 {% endblock %}
 
+{% block stylesheet %}<link rel="stylesheet" href="/static/dashboard-style.css">{% endblock %}
+
 {% block main %}
 
 <div class="container py-5 text-center">
@@ -28,10 +30,10 @@
             </select>
         </div>
         <div class="mb-3">
-            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" id="default-pic"></image>
+            <image src="/static/images/vecteezy_default-profile-account-unknown-icon-black-silhouette_20765399.jpg" class="profile-pic"></image>
         </div>
         <div class="mb-3">
-            <input  class="form-control mx-auto w-auto" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg" id="profile-pic">
+            <input  class="form-control mx-auto w-auto profile-pic" name="file" type="file" autocomplete="off" accept="image/jpeg, image/png, image/jpg">
         </div>
         <div class="mb-3">
             <a href="/">Go to Dashboard?</a>
