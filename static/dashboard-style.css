@@ -42,11 +42,11 @@ a {
     color: #ddd;
 }
 .contacts-section {
-    min-width: 70px;
     width: 250px;
     overflow-y: auto;
     background-color: #333;
     border-right: 1px solid #444;
+    flex-shrink: 0;
 }
 
 .contact {
@@ -65,6 +65,8 @@ a {
     display: flex;
     flex-direction: column;
     background-color: #2c2c2c;
+    overflow: hidden;
+    
 }
 
 .chat-header {
@@ -87,9 +89,6 @@ a {
 .profile-icon-span {
     width: 40px;
     height: 40px;
-    
-    /* background-color: #ccc;
-    border-radius: 50%; */
 }
 
 #profile-icon, #contact-icon{
@@ -114,6 +113,7 @@ a {
     background-color: #1e1e1e;
 }
 
+
 .chat-input {
     min-height: 60px;
     max-height: 60px;
@@ -135,10 +135,6 @@ a {
     border: 1px solid #555;
     
 }
-/* #message-input:active {
-
-    border: 1px solid #555;
-} */
 
 .send-button {
     width: 50px;
@@ -152,8 +148,34 @@ a {
     font-size: 18px;
 }
 
+/* A little inspiration in styling messages https://youtu.be/_sxoqRIbW0c?si=Jn7SCEHcmKoBIv10 */
+
 .message {
-    white-space:pre
+    padding: 0.625em;
+    border-radius: 1em;
+    margin-bottom: 0.625em;
+    display: flex;
+    flex-direction: column;
+    background-color: #3d5365;
+    margin-right: 50px;
+}
+
+.own-message {
+    background-color: #0066CC;
+    margin-right: 0px;
+    margin-left: 50px;
+}
+
+.message-text {
+    font-size: 1em;
+    margin-bottom: 0.31em;
+    word-wrap: break-word; 
+}
+
+
+.message-timestamp {
+    font-size: 0.75em;
+    text-align: right;
 }
 
 .activeContact {
@@ -163,34 +185,6 @@ a {
 ::-webkit-scrollbar {
     display: none;
 }
-
-/* https://stackoverflow.com/questions/21993661/css-auto-hide-elements-after-5-seconds/21994053#21994053 */
-#hideMe {
-    -moz-animation: cssAnimation 0s ease-in 5s forwards;
-    /* Firefox */
-    -webkit-animation: cssAnimation 0s ease-in 5s forwards;
-    /* Safari and Chrome */
-    -o-animation: cssAnimation 0s ease-in 5s forwards;
-    /* Opera */
-    animation: cssAnimation 0s ease-in 5s forwards;
-    -webkit-animation-fill-mode: forwards;
-    animation-fill-mode: forwards;
-}
-@keyframes cssAnimation {
-    to {
-        width:0;
-        height:0;
-        overflow:hidden;
-    }
-}
-@-webkit-keyframes cssAnimation {
-    to {
-        width:0;
-        height:0;
-        visibility:hidden;
-    }
-}
-
 
 .profile-pic {
     width: 200px;
@@ -212,14 +206,26 @@ a {
     transform: translateY(2px);
 }
 
-/* #file-input {
-    max-width: 200px;
-} */
-
-/* #profile-content-name {
+/* ChatGPT Help */
+.message-file {
+    display: flex;
+    align-items: center;
+    background-color: #c8c8c8; 
+    border-radius: 0.5em;
+    padding: 0.5em;
+    margin-bottom: 0.5em;
+    color: #007AFF; 
     font-weight: bold;
-} */
+}
 
-/* .message {
-    max-width: 80vh;
-} */
+.message-file::before {
+    content: "\1F4C4"; 
+    margin-right: 0.5em;
+    font-size: 1.2em;
+}
+
+.message-text {
+    font-size: 1em;
+    margin-bottom: 0.31em;
+    word-wrap: break-word;
+}

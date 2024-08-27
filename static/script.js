@@ -60,19 +60,38 @@ function clickableContact(contactDiv, contact) {
                 const messageDiv = document.createElement('div');
                 // If message contains a File
                 if (message['fid']) {
-                    messageDiv.classList.add('file');
-                    messageDiv.textContent = message["name"] + " " + message["message"];
-                    chatMessagesContainer.appendChild(messageDiv);
-                    messageDiv.addEventListener('click', function() {
+                
+                    const fileDiv = document.createElement("div");
+                    fileDiv.innerHTML = message["name"];
+                    fileDiv.classList.add('message-file');
+                    fileDiv.classList.add("message-text")
+
+                    messageDiv.appendChild(fileDiv);
+
+                    fileDiv.addEventListener('click', function() {
                         fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
                     });
 
-                } else {
-                    messageDiv.classList.add('message');
-                    messageDiv.textContent = message["message"];
-                    chatMessagesContainer.appendChild(messageDiv);
+                } 
+
+                if (message["sender"] !== contactName) {
+                    messageDiv.classList.add('own-message');
                 }
 
+
+                messageDiv.classList.add('message');
+
+                const messageText = document.createElement("div");
+                messageText.innerHTML = message["message"];
+                messageText.classList.add('message-text');
+
+                const messageTimestamp = document.createElement("div");
+                messageTimestamp.innerHTML = message["timestamp"];
+                messageTimestamp.classList.add('message-timestamp');
+
+                messageDiv.appendChild(messageText);
+                messageDiv.appendChild(messageTimestamp);
+                chatMessagesContainer.appendChild(messageDiv);
             });
 
             // Scroll to the bottom of the chat
@@ -140,23 +159,37 @@ const sendMessage = (e) => {
                 message["fid"] = data["fid"];
                 message["name"] = filename;
                 message["mimetype"] = fileInput.files[0].mimetype;
-                // implement Click to Download 
-                newMessage.addEventListener('click', function() {
+                 
+                const fileDiv = document.createElement("div");
+                fileDiv.innerHTML = filename;
+                fileDiv.classList.add('message-file');
+
+                newMessage.appendChild(fileDiv);
+
+                // implement Click to Download
+                fileDiv.addEventListener('click', function() {
                     fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
                 });
-                filename = filename + " ";
             }
-
-            newMessage.classList.add('file');
-            newMessage.textContent =  filename +  textInputValue;
-
-        } else {
-            newMessage.classList.add('message');
-            newMessage.textContent = textInputValue;
-        }
+        } 
         
         // Appending in messages div for user to see his sent message
+        
+        newMessage.classList.add('own-message');
+        newMessage.classList.add('message');
+
+        const messageText = document.createElement("div");
+        messageText.innerHTML = message["message"];
+        messageText.classList.add('message-text');
+
+        const messageTimestamp = document.createElement("div");
+        messageTimestamp.innerHTML = message["timestamp"];
+        messageTimestamp.classList.add('message-timestamp');
+
+        newMessage.appendChild(messageText);
+        newMessage.appendChild(messageTimestamp);
         chatMessages.appendChild(newMessage);
+
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 
         // Appending in messages data for user to see later

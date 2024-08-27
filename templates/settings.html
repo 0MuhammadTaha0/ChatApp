@@ -48,15 +48,14 @@
 
 {% block script %}
     <script>
-        addEventListener("DOMContentLoaded", (event) => {
-            let defaultPic = document.querySelector(".default-pic");
-            let profilePic = document.querySelector(".pic-file");
+    
+        let defaultPic = document.querySelector(".default-pic");
+        let profilePic = document.querySelector(".pic-file");
 
-            profilePic.onchange = function () {
-                defaultPic.src = URL.createObjectURL(profilePic.files[0]);
-            }
-            alert("You can choose to only enter the fields you want to change, and press submit.")
-        });
-        
+        profilePic.onchange = function () {
+            defaultPic.src = URL.createObjectURL(profilePic.files[0]);
+        }
+        alert("You can choose to only enter the fields you want to change, and press submit.");
+    
     </script>
 {% endblock %}
