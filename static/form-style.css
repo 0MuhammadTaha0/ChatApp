@@ -9,8 +9,8 @@ body {
     width: 150px;  
 }
 .registration-container {
-    height: 58vh;
-    width: 80vh;
+    min-height: 58vh; 
+    min-width: 80vh;
     display: grid;
     place-items: center;
     font-family:  sans-serif, Verdana ;
@@ -20,8 +20,8 @@ body {
 }
 
 .settings-container {
-    height: 70vh;
-    width: 80vh;
+    min-height: 70vh;
+    min-width: 80vh;
     display: grid;
     place-items: center;
     font-family:  sans-serif, Verdana ;
