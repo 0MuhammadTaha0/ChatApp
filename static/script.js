@@ -6,12 +6,14 @@ const chatInputForm = document.querySelector('.chat-input')
 async function fileClickListener(fid, name, mimetype) {
     let response = await fetch(`/fetchFile?fid=${fid}`);
     if (response.status == 204) {
-        
+        alert("You do not have rights to the file or it does not exist!");
     } else {
         // BLOB to FILE
         let data = await response.blob();
-        const myFile = new File([data], name, {type: mimetype});
-        
+        const myFile = new File([data], name, {
+            type: mimetype
+        });
+
         // Download Pop Up
         var url = URL.createObjectURL(myFile);
         const link = document.createElement('a')
@@ -20,7 +22,7 @@ async function fileClickListener(fid, name, mimetype) {
         link.download = name
         document.body.appendChild(link)
         link.click()
-        
+
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
     }
@@ -43,7 +45,7 @@ function clickableContact(contactDiv, contact) {
         // Contact Header
         chatHeader[0].innerHTML = contactName;
         chatHeader[1].innerHTML = contactStatus;
-    
+
         const chatMessagesContainer = document.querySelector('.chat-messages');
         chatMessagesContainer.innerHTML = '';
 
@@ -60,7 +62,7 @@ function clickableContact(contactDiv, contact) {
                 const messageDiv = document.createElement('div');
                 // If message contains a File
                 if (message['fid']) {
-                
+
                     const fileDiv = document.createElement("div");
                     fileDiv.innerHTML = message["name"];
                     fileDiv.classList.add('message-file');
@@ -69,10 +71,10 @@ function clickableContact(contactDiv, contact) {
                     messageDiv.appendChild(fileDiv);
 
                     fileDiv.addEventListener('click', function() {
-                        fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
+                        fileClickListener(message['fid'], message['name'], message['mimetype']);
                     });
 
-                } 
+                }
 
                 if (message["sender"] !== contactName) {
                     messageDiv.classList.add('own-message');
@@ -110,15 +112,15 @@ function appendMessage(message, contact) {
     }
 }
 
-// e.preventDefault() syntax help from ChatGPT 
+// e.preventDefault() syntax help from ChatGPT
 const sendMessage = (e) => {
     e.preventDefault()
     // Checking if the user has an active contact
     const activeContact = document.querySelector('.activeContact')
     if (!activeContact) {
-        return            
+        return
     }
-    
+
     // Fetching message data elements
     const fileInput = document.querySelector('#file-input')
     const textInput = document.querySelector('#message-input');
@@ -129,78 +131,78 @@ const sendMessage = (e) => {
     textInput.value = textInputValue;
     // Assigning to the 2 hidden inputs
     receiverInput.value = activeContact.id;
-    timestampInput.value = new Date().toISOString().replace("T"," ").substring(0, 19);
+    timestampInput.value = new Date().toLocaleString();
 
     // https://stackoverflow.com/questions/74195369/post-request-form-data-without-reloading-page-flask-fetch
     const formData = new FormData(e.target);
 
     fetch("/upload/message", {
-        'method': 'POST', 
-        'body': formData
-    })
-    .then(response => response.json()
-    .then(data => {
-    
-        const chatMessages = document.querySelector('.chat-messages');
-        const newMessage = document.createElement('div');
-        let message = {};
+            'method': 'POST',
+            'body': formData
+        })
+        .then(response => response.json()
+            .then(data => {
 
-        message = {
-            message: textInputValue,
-            receiver: activeContact.id,
-            timestamp: new Date().toISOString().replace("T"," ").substring(0, 19)
-        }
+                const chatMessages = document.querySelector('.chat-messages');
+                const newMessage = document.createElement('div');
+                let message = {};
 
-        if (fileInput) {
-            let filename = "";
-            // If File is given
-            if (fileInput.files.length != 0) {
-                filename = fileInput.files[0].name;
-                message["fid"] = data["fid"];
-                message["name"] = filename;
-                message["mimetype"] = fileInput.files[0].mimetype;
-                 
-                const fileDiv = document.createElement("div");
-                fileDiv.innerHTML = filename;
-                fileDiv.classList.add('message-file');
+                message = {
+                    message: textInputValue,
+                    receiver: activeContact.id,
+                    timestamp: timestampInput.value
+                }
 
-                newMessage.appendChild(fileDiv);
+                if (fileInput) {
+                    let filename = "";
+                    // If File is given
+                    if (fileInput.files.length != 0) {
+                        filename = fileInput.files[0].name;
+                        message["fid"] = data["fid"];
+                        message["name"] = filename;
+                        message["mimetype"] = fileInput.files[0].mimetype;
 
-                // implement Click to Download
-                fileDiv.addEventListener('click', function() {
-                    fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
-                });
-            }
-        } 
-        
-        // Appending in messages div for user to see his sent message
-        
-        newMessage.classList.add('own-message');
-        newMessage.classList.add('message');
+                        const fileDiv = document.createElement("div");
+                        fileDiv.innerHTML = filename;
+                        fileDiv.classList.add('message-file');
 
-        const messageText = document.createElement("div");
-        messageText.innerHTML = message["message"];
-        messageText.classList.add('message-text');
+                        newMessage.appendChild(fileDiv);
 
-        const messageTimestamp = document.createElement("div");
-        messageTimestamp.innerHTML = message["timestamp"];
-        messageTimestamp.classList.add('message-timestamp');
+                        // implement Click to Download
+                        fileDiv.addEventListener('click', function() {
+                            fileClickListener(message['fid'], message['name'], message['mimetype']);
+                        });
+                    }
+                }
 
-        newMessage.appendChild(messageText);
-        newMessage.appendChild(messageTimestamp);
-        chatMessages.appendChild(newMessage);
+                // Appending in messages div for user to see his sent message
 
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+                newMessage.classList.add('own-message');
+                newMessage.classList.add('message');
 
-        // Appending in messages data for user to see later
-        appendMessage(message, activeContact.id);
+                const messageText = document.createElement("div");
+                messageText.innerHTML = message["message"];
+                messageText.classList.add('message-text');
 
-        // Clearing inputs
-        fileInput.value = "";
-        textInput.value = "";
-        receiverInput.value = "";
-        timestampInput.value = "";
-    }));
+                const messageTimestamp = document.createElement("div");
+                messageTimestamp.innerHTML = message["timestamp"];
+                messageTimestamp.classList.add('message-timestamp');
+
+                newMessage.appendChild(messageText);
+                newMessage.appendChild(messageTimestamp);
+                chatMessages.appendChild(newMessage);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+
+                // Appending in messages data for user to see later
+                appendMessage(message, activeContact.id);
+
+                // Clearing inputs
+                fileInput.value = "";
+                textInput.value = "";
+                receiverInput.value = "";
+                timestampInput.value = "";
+            }));
 }
 
 chatInputForm.addEventListener('submit', sendMessage)
@@ -208,16 +210,16 @@ chatInputForm.addEventListener('submit', sendMessage)
 //Implementing icons
 const icons = document.querySelectorAll('.icon')
 
-icons[0].onclick = function(){
-location.href='/friends/add';
+icons[0].onclick = function() {
+    location.href = '/friends/add';
 };
 
-icons[1].onclick = function(){
-location.href='/settings';
+icons[1].onclick = function() {
+    location.href = '/settings';
 };
 
-icons[2].onclick = function(){
-location.href='/logout';
+icons[2].onclick = function() {
+    location.href = '/logout';
 };
 
 async function fetchContacts() {
@@ -274,9 +276,9 @@ socket.on("send_message", function(message) {
             newFile.textContent = message["name"];
             chatMessagesContainer.appendChild(newFile);
             newFile.addEventListener('click', function() {
-                fileClickListener(message['fid'], message['name'], message['mimetype']);                                    
+                fileClickListener(message['fid'], message['name'], message['mimetype']);
             });
-            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;    
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         } else {
             const chatMessagesContainer = document.querySelector('.chat-messages');
             const newMessage = document.createElement('div');
