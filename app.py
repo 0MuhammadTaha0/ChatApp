@@ -301,7 +301,7 @@ def add_friends():
             flash("Friend request already exists!")
             return redirect("/friends/add")
 
-        # Making friendship
+        # Making friend request
         db.execute("INSERT into friend_requests (userid, friendid) VALUES (?, ?)",
                    session["user_id"], userid)
 
