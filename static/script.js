@@ -76,7 +76,7 @@ function clickableContact(contactDiv, contact) {
 
                 }
 
-                if (message["sender"] !== contactName) {
+                if (message["receiver"] === contactName) {
                     messageDiv.classList.add('own-message');
                 }
 
@@ -272,12 +272,30 @@ socket.on("send_message", function(message) {
         if (message["fid"]) {
             const chatMessagesContainer = document.querySelector('.chat-messages');
             const newFile = document.createElement('div');
-            newFile.classList.add('file');
-            newFile.textContent = message["name"];
-            chatMessagesContainer.appendChild(newFile);
-            newFile.addEventListener('click', function() {
+            newFile.classList.add('message');
+
+            const fileDiv = document.createElement("div");
+            fileDiv.innerHTML = message["name"];
+            fileDiv.classList.add('message-file');
+            fileDiv.classList.add("message-text")
+
+            fileDiv.addEventListener('click', function() {
                 fileClickListener(message['fid'], message['name'], message['mimetype']);
             });
+
+            const messageText = document.createElement("div");
+            messageText.innerHTML = message["message"];
+            messageText.classList.add('message-text');
+
+            const messageTimestamp = document.createElement("div");
+            messageTimestamp.innerHTML = message["timestamp"];
+            messageTimestamp.classList.add('message-timestamp');
+
+            newFile.appendChild(fileDiv);
+            newFile.appendChild(messageText);
+            newFile.appendChild(messageTimestamp);
+
+            chatMessagesContainer.appendChild(newFile);
             chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         } else {
             const chatMessagesContainer = document.querySelector('.chat-messages');

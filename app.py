@@ -368,10 +368,15 @@ def unfriend():
 @login_required
 def message_upload():
     fid = None
+    name = None
+    mimetype = None
+
     if not request.files["file"].filename == '':
         file = request.files["file"]
+        name = file.filename
+        mimetype = file.mimetype
         fid = db.execute("INSERT INTO File (file, name, mimetype) VALUES (?, ?, ?)",
-                         file.read(), file.filename, file.mimetype)
+                         file.read(), name, mimetype)
 
     # Creating message structure
     message = {}
@@ -380,6 +385,9 @@ def message_upload():
     message["receiver"] = request.form.get("receiver")
     message["timestamp"] = request.form.get("timesstamp")
     message["fid"] = fid
+    message["name"] = name
+    message["mimetype"] = mimetype
+    message["timestamp"] = request.form.get("timestamp")
 
     # If receiver is online
     if int(request.form.get("receiver")) in users:
